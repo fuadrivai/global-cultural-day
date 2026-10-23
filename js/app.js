@@ -557,7 +557,9 @@ class CulturalDayApp {
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error('save_photo.php request failed:', message);
-      this.qrcodeBox.innerHTML = '<span style="font-size:11px;color:#94a3b8;line-height:1.4;display:block;padding:20px 0;">Photo QR is unavailable. Use the Download JPG or PNG buttons instead.</span>';
+      document.getElementById('qrCodeHelp').textContent =
+        '📲 Scan to open the booth page. This photo was not saved online; use Download JPG or PNG.';
+      this.generateQRCode(window.location.href);
       this.showToast(`⚠️ Photo QR unavailable: ${message}`, 6000);
     }
   }
