@@ -1,327 +1,570 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>MHIS | Global Cultural Day</title>
+    <meta
+      name="description"
+      content="Interactive multi-face AR webcam filter for Global Cultural Day with realistic flag bandanas, cheek stickers, and commemorative photobooth."
+    />
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Global Cultural Day - Interactive AR Webcam Booth</title>
-  <meta name="description"
-    content="Interactive multi-face AR webcam filter for Global Cultural Day with realistic flag bandanas, cheek stickers, and commemorative photobooth.">
+    <!-- Design Stylesheet -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="icon" type="image/png" href="assets/images/icon.png" />
+  </head>
 
-  <!-- Design Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌍</text></svg>">
-</head>
+  <body>
+    <!-- Ambient Mesh Background -->
+    <div class="bg-mesh"></div>
 
-<body>
-  <!-- Ambient Mesh Background -->
-  <div class="bg-mesh"></div>
+    <!-- Confetti Canvas -->
+    <canvas id="confettiCanvas"></canvas>
 
-  <!-- Confetti Canvas -->
-  <canvas id="confettiCanvas"></canvas>
+    <!-- Flash Screen Effect -->
+    <div class="flash-overlay" id="flashOverlay"></div>
 
-  <!-- Flash Screen Effect -->
-  <div class="flash-overlay" id="flashOverlay"></div>
+    <!-- Countdown Overlay -->
+    <div class="countdown-overlay" id="countdownOverlay">
+      <div class="countdown-number" id="countdownNumber">3</div>
+      <div class="countdown-subtext" id="countdownSubtext">GET READY!</div>
+    </div>
 
-  <!-- Countdown Overlay -->
-  <div class="countdown-overlay" id="countdownOverlay">
-    <div class="countdown-number" id="countdownNumber">3</div>
-    <div class="countdown-subtext" id="countdownSubtext">GET READY!</div>
-  </div>
+    <!-- Initial Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+      <div class="spinner-ring"></div>
+      <div class="loading-text">Preparing AR Face Filter...</div>
+      <div class="loading-sub" id="loadingStatusText">
+        Loading AI Model & Camera...
+      </div>
+    </div>
 
-  <!-- Initial Loading Screen -->
-  <div class="loading-screen" id="loadingScreen">
-    <div class="spinner-ring"></div>
-    <div class="loading-text">Preparing AR Face Filter...</div>
-    <div class="loading-sub" id="loadingStatusText">Loading AI Model & Camera...</div>
-  </div>
+    <!-- Toast Notification -->
+    <div class="toast-notice" id="toastNotice">Notification Message</div>
 
-  <!-- Toast Notification -->
-  <div class="toast-notice" id="toastNotice">Notification Message</div>
+    <!-- Main Application Container -->
+    <div class="app-container">
+      <!-- Viewport / Video Stage -->
+      <div class="viewport-stage" id="viewportStage">
+        <!-- Hidden Video Element for Webcam Input -->
+        <video id="webcamVideo" playsinline autoplay muted></video>
 
-  <!-- Main Application Container -->
-  <div class="app-container">
+        <!-- Main Live AR Canvas -->
+        <canvas id="arCanvas"></canvas>
 
-    <!-- Viewport / Video Stage -->
-    <div class="viewport-stage" id="viewportStage">
-      <!-- Hidden Video Element for Webcam Input -->
-      <video id="webcamVideo" playsinline autoplay muted></video>
+        <!-- HUD Overlay -->
+        <div class="hud-layer">
+          <!-- Top Navigation Bar -->
+          <header class="top-bar">
+            <!-- Brand Badge -->
+            <div class="brand-badge interactive-control">
+              <img class="brand-icon" src="assets/images/icon.png" alt="Mutiara Harapan Islamic School" />
+              <div class="brand-text">
+                <h1>GLOBAL CULTURAL DAY</h1>
+                <span>Mutiara Harapan Islamic School</span>
+              </div>
+            </div>
 
-      <!-- Main Live AR Canvas -->
-      <canvas id="arCanvas"></canvas>
+            <!-- Live Detection Pill -->
+            <div class="detection-pill interactive-control" id="detectionPill">
+              <div class="status-dot"></div>
+              <span id="detectionText">Searching for faces...</span>
+            </div>
 
-      <!-- HUD Overlay -->
-      <div class="hud-layer">
+            <!-- Top Action Buttons -->
+            <div class="top-actions interactive-control">
+              <button
+                class="glass-btn"
+                id="btnSwitchCam"
+                title="Switch / Start Camera"
+              >
+                📷
+              </button>
+              <button
+                class="glass-btn"
+                id="btnUploadTest"
+                title="Test Multi-Face Photo (Upload)"
+              >
+                🖼️
+              </button>
+              <input
+                type="file"
+                id="fileUploadInput"
+                accept="image/*"
+                style="display: none"
+              />
+              <button
+                class="glass-btn"
+                id="btnShuffle"
+                title="Shuffle Countries"
+              >
+                🎲
+              </button>
+              <button
+                class="glass-btn"
+                id="btnSettings"
+                title="Filter Settings"
+              >
+                ⚙️
+              </button>
+              <button
+                class="glass-btn"
+                id="btnFullscreen"
+                title="Fullscreen Mode (Kiosk)"
+              >
+                ⛶
+              </button>
+            </div>
+          </header>
 
-        <!-- Top Navigation Bar -->
-        <header class="top-bar">
-          <!-- Brand Badge -->
-          <div class="brand-badge interactive-control">
-            <span class="brand-globe">🌍</span>
-            <div class="brand-text">
-              <h1>GLOBAL CULTURAL DAY</h1>
-              <span>AR Photobooth • Multi-Face</span>
+          <!-- Right Side Quick Action Dock -->
+          <aside class="side-dock">
+            <p class="side-dock-hint">
+              <strong>Try the filters</strong>
+              <span>Tap an option to turn it on or change its style anytime.</span>
+            </p>
+            <button class="action-pill-btn" id="btnSideShuffle">
+              <span>🎲</span> Shuffle Flags
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnToggleBandana"
+              aria-pressed="false"
+            >
+              <span>👑</span> Headband
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnToggleSticker"
+              aria-pressed="true"
+            >
+              <span>✨</span> Cheek Sticker
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnToggleGlasses"
+              aria-pressed="false"
+            >
+              <span>🕶️</span> Glasses
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnCycleGlasses"
+              title="Cycle glasses style"
+            >
+              <span>🎨</span> Glasses: <span id="glassesStyleLabel">Classic Clear</span>
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnToggleHat"
+              aria-pressed="false"
+            >
+              <span>🧢</span> Cap
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnToggleOutfit"
+              aria-pressed="false"
+            >
+              <span>👘</span> Cultural Outfit
+            </button>
+            <button
+              class="action-pill-btn"
+              id="btnCycleSticker"
+              title="Cycle cheek sticker style"
+            >
+              <span>🎨</span> Sticker: <span id="stickerStyleLabel">Flag</span>
+            </button>
+          </aside>
+
+          <!-- Bottom Controls Dock -->
+          <footer class="bottom-dock">
+            <!-- Region Selector Bar -->
+            <nav class="region-bar interactive-control" id="regionBar">
+              <button class="region-tab active" data-region="all">
+                <span>🌍</span> All Continents
+              </button>
+              <button class="region-tab" data-region="asia">
+                <span>🏮</span> Asia
+              </button>
+              <button class="region-tab" data-region="europe">
+                <span>🏰</span> Europe
+              </button>
+              <button class="region-tab" data-region="north_africa">
+                <span>🏜️</span> North Africa
+              </button>
+              <button class="region-tab" data-region="west_africa">
+                <span>🥁</span> West Africa
+              </button>
+              <button class="region-tab" data-region="southern_africa">
+                <span>🦁</span> Southern Africa
+              </button>
+              <button class="region-tab" data-region="oceania">
+                <span>🌊</span> Oceania
+              </button>
+            </nav>
+
+            <!-- Big Camera Shutter Trigger -->
+            <div class="shutter-wrapper interactive-control">
+              <div class="shutter-pulse"></div>
+              <button class="shutter-btn" id="btnShutter" title="Take Photo">
+                <span>📸</span>
+              </button>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <!-- Photo Review Modal (Polaroid / Event Frame) -->
+    <div class="modal-backdrop" id="photoModal">
+      <div class="photo-card-container">
+        <!-- Preview Pane -->
+        <div class="photo-preview-pane">
+          <div class="polaroid-frame" id="polaroidFrame">
+            <div class="photo-frame-header">
+              <div class="photo-frame-school">
+                <img src="assets/images/icon.png" alt="Logo Mutiara Harapan Islamic School">
+                <div>
+                  <span>MUTIARA HARAPAN ISLAMIC SCHOOL</span>
+                  <strong>GLOBAL CULTURAL DAY</strong>
+                </div>
+              </div>
+              <span class="photo-frame-year">2026</span>
+            </div>
+            <canvas id="photoPreviewCanvas"></canvas>
+            <div class="polaroid-caption">
+              <div class="caption-brand">CELEBRATING CULTURES, TOGETHER</div>
+              <div class="caption-date" id="polaroidDate">October 14, 2026</div>
             </div>
           </div>
-
-          <!-- Live Detection Pill -->
-          <div class="detection-pill interactive-control" id="detectionPill">
-            <div class="status-dot"></div>
-            <span id="detectionText">Searching for faces...</span>
-          </div>
-
-          <!-- Top Action Buttons -->
-          <div class="top-actions interactive-control">
-            <button class="glass-btn" id="btnSwitchCam" title="Switch / Start Camera">📷</button>
-            <button class="glass-btn" id="btnUploadTest" title="Test Multi-Face Photo (Upload)">🖼️</button>
-            <input type="file" id="fileUploadInput" accept="image/*" style="display: none;">
-            <button class="glass-btn" id="btnShuffle" title="Shuffle Countries">🎲</button>
-            <button class="glass-btn" id="btnSettings" title="Filter Settings">⚙️</button>
-            <button class="glass-btn" id="btnFullscreen" title="Fullscreen Mode (Kiosk)">⛶</button>
-          </div>
-        </header>
-
-        <!-- Right Side Quick Action Dock -->
-        <aside class="side-dock">
-          <button class="action-pill-btn" id="btnSideShuffle">
-            <span>🎲</span> Shuffle Flags
-          </button>
-          <button class="action-pill-btn" id="btnToggleBandana">
-            <span>👑</span> Headband
-          </button>
-          <button class="action-pill-btn" id="btnToggleSticker">
-            <span>✨</span> Cheek Sticker
-          </button>
-        </aside>
-
-        <!-- Bottom Controls Dock -->
-        <footer class="bottom-dock">
-          <!-- Region Selector Bar -->
-          <nav class="region-bar interactive-control" id="regionBar">
-            <button class="region-tab active" data-region="all">
-              <span>🌍</span> All Continents
-            </button>
-            <button class="region-tab" data-region="asia">
-              <span>🏮</span> Asia
-            </button>
-            <button class="region-tab" data-region="europe">
-              <span>🏰</span> Europe
-            </button>
-            <button class="region-tab" data-region="north_africa">
-              <span>🏜️</span> North Africa
-            </button>
-            <button class="region-tab" data-region="west_africa">
-              <span>🥁</span> West Africa
-            </button>
-            <button class="region-tab" data-region="southern_africa">
-              <span>🦁</span> Southern Africa
-            </button>
-            <button class="region-tab" data-region="oceania">
-              <span>🌊</span> Oceania
-            </button>
-          </nav>
-
-          <!-- Big Camera Shutter Trigger -->
-          <div class="shutter-wrapper interactive-control">
-            <div class="shutter-pulse"></div>
-            <button class="shutter-btn" id="btnShutter" title="Take Photo">
-              <span>📸</span>
-            </button>
-          </div>
-        </footer>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- Photo Review Modal (Polaroid / Event Frame) -->
-  <div class="modal-backdrop" id="photoModal">
-    <div class="photo-card-container">
-      <!-- Preview Pane -->
-      <div class="photo-preview-pane">
-        <div class="polaroid-frame" id="polaroidFrame">
-          <canvas id="photoPreviewCanvas"></canvas>
-          <div class="polaroid-caption">
-            <div class="caption-brand">GLOBAL CULTURAL DAY 2026</div>
-            <div class="caption-date" id="polaroidDate">October 14, 2026</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions Pane -->
-      <div class="photo-actions-pane">
-        <div class="action-header">
-          <h2>Awesome Cultural Photo! 🎉</h2>
-          <p>Commemorating Global Cultural Day with your family & friends.</p>
         </div>
 
-        <!-- QR Code Section -->
-        <div class="qr-section">
-          <div id="qrcodeBox"></div>
-          <span>📲 Scan this QR Code on your smartphone to save your photo directly!</span>
-        </div>
+        <!-- Actions Pane -->
+        <div class="photo-actions-pane">
+          <div class="action-header">
+            <h2>Awesome Cultural Photo! 🎉</h2>
+            <p>Commemorating Global Cultural Day with your family & friends.</p>
+          </div>
 
-        <!-- Buttons Column -->
-        <div class="btn-group-column">
-          <div style="display: flex; gap: 8px; width: 100%;">
-            <button class="primary-btn" id="btnDownloadJPG" style="flex: 1;" title="Download standard JPG format">
-              <span>💾</span> Download JPG
+          <!-- QR Code Section -->
+          <div class="qr-section">
+            <div id="qrcodeBox"></div>
+            <span
+              >📲 Scan this QR Code on your smartphone to save your photo
+              directly!</span
+            >
+          </div>
+
+          <!-- Buttons Column -->
+          <div class="btn-group-column">
+            <div style="display: flex; gap: 8px; width: 100%">
+              <button
+                class="primary-btn"
+                id="btnDownloadJPG"
+                style="flex: 1"
+                title="Download standard JPG format"
+              >
+                <span>💾</span> Download JPG
+              </button>
+              <button
+                class="primary-btn"
+                id="btnDownloadPNG"
+                style="
+                  flex: 1;
+                  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+                "
+                title="Download high-resolution PNG format"
+              >
+                <span>🖼️</span> Download PNG
+              </button>
+            </div>
+            <button class="secondary-btn" id="btnRetakePhoto">
+              <span>🔄</span> Take Another (Back to Camera)
             </button>
-            <button class="primary-btn" id="btnDownloadPNG"
-              style="flex: 1; background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);"
-              title="Download high-resolution PNG format">
-              <span>🖼️</span> Download PNG
+            <button class="secondary-btn" id="btnCloseModal">
+              <span>✖️</span> Close
             </button>
           </div>
-          <button class="secondary-btn" id="btnRetakePhoto">
-            <span>🔄</span> Take Another (Back to Camera)
-          </button>
-          <button class="secondary-btn" id="btnCloseModal">
-            <span>✖️</span> Close
-          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Settings Modal -->
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="settings-modal">
-      <div class="settings-header">
-        <h3>AR Filter & Camera Settings</h3>
-        <button class="close-x-btn" id="btnCloseSettings">✕</button>
-      </div>
-
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Countdown Duration (Timer)</div>
-          <div class="setting-desc">Preparation time before photo is taken</div>
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settingsModal">
+      <div class="settings-modal">
+        <div class="settings-header">
+          <h3>AR Filter & Camera Settings</h3>
+          <button class="close-x-btn" id="btnCloseSettings">✕</button>
         </div>
-        <select id="selectCountdownDuration"
-          style="background:#1E293B; color:#FFF; border:1px solid #334155; padding:6px 12px; border-radius:8px; font-weight:600;">
-          <option value="3" selected>3 Seconds</option>
-          <option value="5">5 Seconds</option>
-          <option value="10">10 Seconds</option>
-        </select>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Default Download Format</div>
-          <div class="setting-desc">Primary photo file format</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Countdown Duration (Timer)</div>
+            <div class="setting-desc">
+              Preparation time before photo is taken
+            </div>
+          </div>
+          <select
+            id="selectCountdownDuration"
+            style="
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-weight: 600;
+            "
+          >
+            <option value="3" selected>3 Seconds</option>
+            <option value="5">5 Seconds</option>
+            <option value="10">10 Seconds</option>
+          </select>
         </div>
-        <select id="selectDefaultFormat"
-          style="background:#1E293B; color:#FFF; border:1px solid #334155; padding:6px 12px; border-radius:8px; font-weight:600;">
-          <option value="jpg" selected>JPG (Standard Photo)</option>
-          <option value="png">PNG (Full Quality)</option>
-        </select>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Face Tracking Sensitivity</div>
-          <div class="setting-desc">Anti-glitch filter for 2-3 meter distance</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Default Download Format</div>
+            <div class="setting-desc">Primary photo file format</div>
+          </div>
+          <select
+            id="selectDefaultFormat"
+            style="
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-weight: 600;
+            "
+          >
+            <option value="jpg" selected>JPG (Standard Photo)</option>
+            <option value="png">PNG (Full Quality)</option>
+          </select>
         </div>
-        <select id="selectSensitivity"
-          style="background:#1E293B; color:#FFF; border:1px solid #334155; padding:6px 12px; border-radius:8px; font-weight:600;">
-          <option value="balanced" selected>Balanced (2-3m Anti-Glitch)</option>
-          <option value="high">High (Low Light)</option>
-          <option value="strict">Strict (Maximum Stability)</option>
-        </select>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Show Bandana / Headband</div>
-          <div class="setting-desc">Wraps around forehead following head contour</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Face Tracking Sensitivity</div>
+            <div class="setting-desc">
+              Anti-glitch filter for 2-3 meter distance
+            </div>
+          </div>
+          <select
+            id="selectSensitivity"
+            style="
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-weight: 600;
+            "
+          >
+            <option value="balanced" selected>
+              Balanced (2-3m Anti-Glitch)
+            </option>
+            <option value="high">High (Low Light)</option>
+            <option value="strict">Strict (Maximum Stability)</option>
+          </select>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="checkHeadband">
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Show Cheek Sticker</div>
-          <div class="setting-desc">Mini flag sticker on cheeks</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Show Bandana / Headband</div>
+            <div class="setting-desc">
+              Wraps around forehead following head contour
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkHeadband" />
+            <span class="slider"></span>
+          </label>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="checkSticker" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Cheek Sticker Position</div>
-          <div class="setting-desc">Choose placement on cheeks</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Show Glasses</div>
+            <div class="setting-desc">Choose a face-tracked glasses style</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkGlasses" />
+            <span class="slider"></span>
+          </label>
         </div>
-        <select id="selectStickerSide"
-          style="background:#1E293B; color:#FFF; border:1px solid #334155; padding:6px 12px; border-radius:8px; font-weight:600;">
-          <option value="right" selected>Right Cheek</option>
-          <option value="left">Left Cheek</option>
-          <option value="both">Both Cheeks</option>
-        </select>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Country Name Label</div>
-          <div class="setting-desc">Floating badge above head</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Glasses Style</div>
+            <div class="setting-desc">Clear lenses keep your eyes visible</div>
+          </div>
+          <select
+            id="selectGlassesStyle"
+            style="
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-weight: 600;
+            "
+          >
+            <option value="classic">🕶️ Classic Clear</option>
+            <option value="round">⚫ Round Clear</option>
+            <option value="aviator">🟡 Gold Aviator Clear</option>
+            <option value="heart">💗 Heart Party Clear</option>
+          </select>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="checkLabel">
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Mirror Camera (Selfie Mode)</div>
-          <div class="setting-desc">Horizontally mirrors webcam video</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Traditional-Inspired Outfit</div>
+            <div class="setting-desc">Illustrated outfit with colors and motifs inspired by the assigned country</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkOutfit" />
+            <span class="slider"></span>
+          </label>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="checkMirror" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <div class="setting-item">
-        <div>
-          <div class="setting-label">Sound Effects</div>
-          <div class="setting-desc">Countdown ticks, shutter flash, and fanfare</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Show Cap</div>
+            <div class="setting-desc">Face-tracked colorful cap sticker</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkHat" />
+            <span class="slider"></span>
+          </label>
         </div>
-        <label class="switch">
-          <input type="checkbox" id="checkSound" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
 
-      <div class="setting-item" style="border-bottom:none;">
-        <div>
-          <div class="setting-label">Camera Device</div>
-          <div class="setting-desc">Select active webcam device</div>
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Show Cheek Sticker</div>
+            <div class="setting-desc">Flag or festival icon on cheeks</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkSticker" checked />
+            <span class="slider"></span>
+          </label>
         </div>
-        <select id="selectCameraDevice"
-          style="max-width:180px; background:#1E293B; color:#FFF; border:1px solid #334155; padding:6px 12px; border-radius:8px; font-size:12px;">
-          <option value="">Default Camera</option>
-        </select>
+
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Cheek Sticker Position</div>
+            <div class="setting-desc">Choose placement on cheeks</div>
+          </div>
+          <select
+            id="selectStickerSide"
+            style="
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-weight: 600;
+            "
+          >
+            <option value="right" selected>Right Cheek</option>
+            <option value="left">Left Cheek</option>
+            <option value="both">Both Cheeks</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Cheek Sticker Style</div>
+            <div class="setting-desc">Choose a flag or festival decoration</div>
+          </div>
+          <select
+            id="selectStickerStyle"
+            style="
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-weight: 600;
+            "
+          >
+            <option value="flag">🏳️ Country Flag</option>
+            <option value="heart">💖 Heart</option>
+            <option value="star">⭐ Star</option>
+            <option value="flower">🌸 Flower</option>
+            <option value="sparkle">✨ Sparkle</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Country Name Label</div>
+            <div class="setting-desc">Floating badge above head</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkLabel" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Mirror Camera (Selfie Mode)</div>
+            <div class="setting-desc">Horizontally mirrors webcam video</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkMirror" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div>
+            <div class="setting-label">Sound Effects</div>
+            <div class="setting-desc">
+              Countdown ticks, shutter flash, and fanfare
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="checkSound" checked />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item" style="border-bottom: none">
+          <div>
+            <div class="setting-label">Camera Device</div>
+            <div class="setting-desc">Select active webcam device</div>
+          </div>
+          <select
+            id="selectCameraDevice"
+            style="
+              max-width: 180px;
+              background: #1e293b;
+              color: #fff;
+              border: 1px solid #334155;
+              padding: 6px 12px;
+              border-radius: 8px;
+              font-size: 12px;
+            "
+          >
+            <option value="">Default Camera</option>
+          </select>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- VENDOR LIBRARIES (OFFLINE & LOCAL) -->
-  <script src="vendor/mediapipe/face_mesh.js"></script>
-  <script src="vendor/confetti.browser.js"></script>
-  <script src="vendor/qrcode.min.js"></script>
+    <!-- VENDOR LIBRARIES (OFFLINE & LOCAL) -->
+    <script src="vendor/mediapipe/face_mesh.js"></script>
+    <script src="vendor/confetti.browser.js"></script>
+    <script src="vendor/qrcode.min.js"></script>
 
-  <!-- APPLICATION SCRIPTS -->
-  <script src="js/flags.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/renderer.js"></script>
-  <script src="js/app.js"></script>
-</body>
-
+    <!-- APPLICATION SCRIPTS -->
+    <script src="js/flags.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>

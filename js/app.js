@@ -69,6 +69,35 @@ class CulturalDayApp {
 
     const checkSticker = document.getElementById('checkSticker');
     if (checkSticker) checkSticker.checked = this.renderer.settings.showSticker;
+
+    const checkGlasses = document.getElementById('checkGlasses');
+    if (checkGlasses) checkGlasses.checked = this.renderer.settings.showGlasses;
+
+    const selectGlassesStyle = document.getElementById('selectGlassesStyle');
+    if (selectGlassesStyle) selectGlassesStyle.value = this.renderer.settings.glassesStyle;
+
+    const checkHat = document.getElementById('checkHat');
+    if (checkHat) checkHat.checked = this.renderer.settings.showHat;
+
+    const checkOutfit = document.getElementById('checkOutfit');
+    if (checkOutfit) checkOutfit.checked = this.renderer.settings.showOutfit;
+
+    const selectStickerStyle = document.getElementById('selectStickerStyle');
+    if (selectStickerStyle) selectStickerStyle.value = this.renderer.settings.stickerStyle;
+
+    const style = window.STICKER_STYLES.find(item => item.id === this.renderer.settings.stickerStyle);
+    const styleLabel = document.getElementById('stickerStyleLabel');
+    if (style && styleLabel) styleLabel.textContent = style.label;
+
+    const glassesStyle = window.GLASSES_STYLES.find(item => item.id === this.renderer.settings.glassesStyle);
+    const glassesStyleLabel = document.getElementById('glassesStyleLabel');
+    if (glassesStyle && glassesStyleLabel) glassesStyleLabel.textContent = glassesStyle.label;
+
+    document.getElementById('btnToggleBandana').setAttribute('aria-pressed', this.renderer.settings.showHeadband);
+    document.getElementById('btnToggleSticker').setAttribute('aria-pressed', this.renderer.settings.showSticker);
+    document.getElementById('btnToggleGlasses').setAttribute('aria-pressed', this.renderer.settings.showGlasses);
+    document.getElementById('btnToggleHat').setAttribute('aria-pressed', this.renderer.settings.showHat);
+    document.getElementById('btnToggleOutfit').setAttribute('aria-pressed', this.renderer.settings.showOutfit);
   }
 
   setupDateDisplay() {
@@ -380,40 +409,113 @@ class CulturalDayApp {
   generatePolaroidCardCanvas() {
     const photo = this.photoPreviewCanvas;
     const exportCanvas = document.createElement('canvas');
-    const borderPadding = 36;
-    const bottomCaptionHeight = 110;
+    const padding = 32;
+    const headerHeight = 86;
+    const footerHeight = 78;
+    const photoX = padding;
+    const photoY = padding + headerHeight;
+    const photoBottom = photoY + photo.height;
 
-    exportCanvas.width = photo.width + borderPadding * 2;
-    exportCanvas.height = photo.height + borderPadding + bottomCaptionHeight;
-
+    exportCanvas.width = photo.width + padding * 2;
+    exportCanvas.height = photo.height + padding * 2 + headerHeight + footerHeight;
     const ctx = exportCanvas.getContext('2d');
 
-    // Crisp white photo card background
-    ctx.fillStyle = '#FFFFFF';
+    const cardGradient = ctx.createLinearGradient(0, 0, exportCanvas.width, exportCanvas.height);
+    cardGradient.addColorStop(0, '#111827');
+    cardGradient.addColorStop(0.56, '#172554');
+    cardGradient.addColorStop(1, '#0F172A');
+    ctx.fillStyle = cardGradient;
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-    // Main photo
-    ctx.drawImage(photo, borderPadding, borderPadding);
-
-    // Subtle inner photo border stroke
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.12)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
     ctx.lineWidth = 2;
-    ctx.strokeRect(borderPadding, borderPadding, photo.width, photo.height);
+    ctx.roundRect(1, 1, exportCanvas.width - 2, exportCanvas.height - 2, 26);
+    ctx.stroke();
 
-    // Event Title
-    ctx.fillStyle = '#0F172A';
-    ctx.font = 'bold 38px "Outfit", system-ui, sans-serif';
-    ctx.fillText('GLOBAL CULTURAL DAY 2026', borderPadding + 10, photo.height + borderPadding + 54);
+    const accentGradient = ctx.createLinearGradient(padding, 0, exportCanvas.width - padding, 0);
+    accentGradient.addColorStop(0, '#06B6D4');
+    accentGradient.addColorStop(0.38, '#FFFFFF');
+    accentGradient.addColorStop(0.7, '#F59E0B');
+    accentGradient.addColorStop(1, '#F43F5E');
+    ctx.fillStyle = accentGradient;
+    ctx.fillRect(padding, 0, exportCanvas.width - padding * 2, 5);
 
-    // Subtitle & Date
-    ctx.fillStyle = '#64748B';
-    ctx.font = '500 22px "Plus Jakarta Sans", system-ui, sans-serif';
+    const iconSize = 48;
+    const iconX = padding + 2;
+    const iconY = padding + 14;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.roundRect(iconX, iconY, iconSize, iconSize, 12);
+    ctx.fill();
+
+    const schoolIcon = document.querySelector('.brand-icon');
+    if (schoolIcon && schoolIcon.complete && schoolIcon.naturalWidth > 0) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(iconX + 4, iconY + 4, iconSize - 8, iconSize - 8, 8);
+      ctx.clip();
+      ctx.drawImage(schoolIcon, iconX + 4, iconY + 4, iconSize - 8, iconSize - 8);
+      ctx.restore();
+    }
+
+    const textX = iconX + iconSize + 13;
+    ctx.fillStyle = '#A5F3FC';
+    ctx.font = '800 15px "Plus Jakarta Sans", system-ui, sans-serif';
+    ctx.fillText('MUTIARA HARAPAN ISLAMIC SCHOOL', textX, padding + 31);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '800 25px "Outfit", system-ui, sans-serif';
+    ctx.fillText('GLOBAL CULTURAL DAY', textX, padding + 60);
+
+    const yearPillWidth = 82;
+    const yearPillX = exportCanvas.width - padding - yearPillWidth;
+    const yearPillY = padding + 22;
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+    ctx.strokeStyle = 'rgba(253, 230, 138, 0.65)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(yearPillX, yearPillY, yearPillWidth, 34, 17);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#FDE68A';
+    ctx.font = '800 17px "Outfit", system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('2026', yearPillX + yearPillWidth / 2, yearPillY + 17);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(photoX, photoY, photo.width, photo.height, 12);
+    ctx.clip();
+    ctx.drawImage(photo, photoX, photoY);
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(photoX, photoY, photo.width, photo.height, 12);
+    ctx.stroke();
+
+    const footerY = photoBottom + 19;
+    const footerAccent = ctx.createLinearGradient(padding, 0, padding + 72, 0);
+    footerAccent.addColorStop(0, '#06B6D4');
+    footerAccent.addColorStop(0.55, '#F59E0B');
+    footerAccent.addColorStop(1, '#F43F5E');
+    ctx.fillStyle = footerAccent;
+    ctx.beginPath();
+    ctx.roundRect(padding + 2, footerY, 76, 4, 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#F8FAFC';
+    ctx.font = '800 17px "Outfit", system-ui, sans-serif';
+    ctx.fillText('CELEBRATING CULTURES, TOGETHER', padding + 2, photoBottom + 49);
+
+    ctx.fillStyle = '#CBD5E1';
+    ctx.font = '500 14px "Plus Jakarta Sans", system-ui, sans-serif';
     const dateText = document.getElementById('polaroidDate').textContent;
-    ctx.fillText(`Mutiara Harapan Islamic School • ${dateText}`, borderPadding + 10, photo.height + borderPadding + 88);
-
-    // Globe watermark emoji
-    ctx.font = '40px system-ui';
-    ctx.fillText('🌍', exportCanvas.width - borderPadding - 55, photo.height + borderPadding + 65);
+    ctx.fillText(dateText, padding + 2, photoBottom + 69);
 
     return exportCanvas;
   }
@@ -556,6 +658,7 @@ class CulturalDayApp {
     document.getElementById('btnToggleBandana').addEventListener('click', () => {
       this.renderer.settings.showHeadband = !this.renderer.settings.showHeadband;
       document.getElementById('checkHeadband').checked = this.renderer.settings.showHeadband;
+      document.getElementById('btnToggleBandana').setAttribute('aria-pressed', this.renderer.settings.showHeadband);
       window.soundManager.playPop();
       this.showToast(`👑 Headband: ${this.renderer.settings.showHeadband ? 'Enabled' : 'Disabled'}`);
     });
@@ -563,8 +666,65 @@ class CulturalDayApp {
     document.getElementById('btnToggleSticker').addEventListener('click', () => {
       this.renderer.settings.showSticker = !this.renderer.settings.showSticker;
       document.getElementById('checkSticker').checked = this.renderer.settings.showSticker;
+      document.getElementById('btnToggleSticker').setAttribute('aria-pressed', this.renderer.settings.showSticker);
       window.soundManager.playPop();
       this.showToast(`✨ Cheek Sticker: ${this.renderer.settings.showSticker ? 'Enabled' : 'Disabled'}`);
+    });
+
+    document.getElementById('btnToggleGlasses').addEventListener('click', () => {
+      this.renderer.settings.showGlasses = !this.renderer.settings.showGlasses;
+      document.getElementById('checkGlasses').checked = this.renderer.settings.showGlasses;
+      document.getElementById('btnToggleGlasses').setAttribute('aria-pressed', this.renderer.settings.showGlasses);
+      window.soundManager.playPop();
+      this.showToast(`🕶️ Glasses: ${this.renderer.settings.showGlasses ? 'Enabled' : 'Disabled'}`);
+    });
+
+    const updateGlassesStyleLabel = styleId => {
+      const style = window.GLASSES_STYLES.find(item => item.id === styleId);
+      if (style) document.getElementById('glassesStyleLabel').textContent = style.label;
+    };
+
+    document.getElementById('btnCycleGlasses').addEventListener('click', () => {
+      const styles = window.GLASSES_STYLES;
+      const currentIndex = styles.findIndex(style => style.id === this.renderer.settings.glassesStyle);
+      const nextStyle = styles[(currentIndex + 1) % styles.length];
+      this.renderer.settings.glassesStyle = nextStyle.id;
+      document.getElementById('selectGlassesStyle').value = nextStyle.id;
+      updateGlassesStyleLabel(nextStyle.id);
+      window.soundManager.playPop();
+      this.showToast(`🕶️ Glasses style: ${nextStyle.label}`);
+    });
+
+    document.getElementById('btnToggleHat').addEventListener('click', () => {
+      this.renderer.settings.showHat = !this.renderer.settings.showHat;
+      document.getElementById('checkHat').checked = this.renderer.settings.showHat;
+      document.getElementById('btnToggleHat').setAttribute('aria-pressed', this.renderer.settings.showHat);
+      window.soundManager.playPop();
+      this.showToast(`🧢 Cap: ${this.renderer.settings.showHat ? 'Enabled' : 'Disabled'}`);
+    });
+
+    document.getElementById('btnToggleOutfit').addEventListener('click', () => {
+      this.renderer.settings.showOutfit = !this.renderer.settings.showOutfit;
+      document.getElementById('checkOutfit').checked = this.renderer.settings.showOutfit;
+      document.getElementById('btnToggleOutfit').setAttribute('aria-pressed', this.renderer.settings.showOutfit);
+      window.soundManager.playPop();
+      this.showToast(`👘 Cultural outfit: ${this.renderer.settings.showOutfit ? 'Enabled' : 'Disabled'}`);
+    });
+
+    const updateStickerStyleLabel = styleId => {
+      const style = window.STICKER_STYLES.find(item => item.id === styleId);
+      if (style) document.getElementById('stickerStyleLabel').textContent = style.label;
+    };
+
+    document.getElementById('btnCycleSticker').addEventListener('click', () => {
+      const styles = window.STICKER_STYLES;
+      const currentIndex = styles.findIndex(style => style.id === this.renderer.settings.stickerStyle);
+      const nextStyle = styles[(currentIndex + 1) % styles.length];
+      this.renderer.settings.stickerStyle = nextStyle.id;
+      document.getElementById('selectStickerStyle').value = nextStyle.id;
+      updateStickerStyleLabel(nextStyle.id);
+      window.soundManager.playPop();
+      this.showToast(`${nextStyle.icon} Sticker style: ${nextStyle.label}`);
     });
 
     // 5. Fullscreen Kiosk Toggle
@@ -637,12 +797,34 @@ class CulturalDayApp {
     // Checkbox binds in Settings
     document.getElementById('checkHeadband').addEventListener('change', e => {
       this.renderer.settings.showHeadband = e.target.checked;
+      document.getElementById('btnToggleBandana').setAttribute('aria-pressed', e.target.checked);
     });
     document.getElementById('checkSticker').addEventListener('change', e => {
       this.renderer.settings.showSticker = e.target.checked;
+      document.getElementById('btnToggleSticker').setAttribute('aria-pressed', e.target.checked);
+    });
+    document.getElementById('checkGlasses').addEventListener('change', e => {
+      this.renderer.settings.showGlasses = e.target.checked;
+      document.getElementById('btnToggleGlasses').setAttribute('aria-pressed', e.target.checked);
+    });
+    document.getElementById('selectGlassesStyle').addEventListener('change', e => {
+      this.renderer.settings.glassesStyle = e.target.value;
+      updateGlassesStyleLabel(e.target.value);
+    });
+    document.getElementById('checkHat').addEventListener('change', e => {
+      this.renderer.settings.showHat = e.target.checked;
+      document.getElementById('btnToggleHat').setAttribute('aria-pressed', e.target.checked);
+    });
+    document.getElementById('checkOutfit').addEventListener('change', e => {
+      this.renderer.settings.showOutfit = e.target.checked;
+      document.getElementById('btnToggleOutfit').setAttribute('aria-pressed', e.target.checked);
     });
     document.getElementById('selectStickerSide').addEventListener('change', e => {
       this.renderer.settings.stickerSide = e.target.value;
+    });
+    document.getElementById('selectStickerStyle').addEventListener('change', e => {
+      this.renderer.settings.stickerStyle = e.target.value;
+      updateStickerStyleLabel(e.target.value);
     });
     document.getElementById('checkLabel').addEventListener('change', e => {
       this.renderer.settings.showLabel = e.target.checked;

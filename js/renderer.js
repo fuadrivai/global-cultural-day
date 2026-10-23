@@ -17,8 +17,13 @@ class ARRenderer {
     this.settings = {
       showHeadband: false, // Default: OFF (tidak terlihat)
       showSticker: true,   // Default: ON (hanya stiker terlihat)
+      showGlasses: false,
+      glassesStyle: 'classic',
+      showHat: false,
+      showOutfit: false,
       showLabel: false,    // Default: OFF (tidak terlihat)
       stickerSide: 'right', // 'right', 'left', or 'both'
+      stickerStyle: 'flag',
       activeRegion: 'all',
       mirrorCamera: true,
       smoothingFactor: 0.65 // exponential smoothing for rock-solid stability
@@ -462,6 +467,21 @@ class ARRenderer {
       });
     }
 
+    if (this.settings.showOutfit) {
+      this.drawTraditionalOutfit(ctx, pts, country, faceWidth);
+    }
+
+    if (this.settings.showHat) {
+      this.drawFestivalCap(ctx, pts, faceWidth, rollAngle);
+    }
+
+    if (this.settings.showGlasses) {
+      this.drawFestivalGlasses(ctx, pts, {
+        rollAngle,
+        faceHeight
+      });
+    }
+
     // 2. Render Face Sticker Decal on Cheek (Conforming to 3D facial cheek contour)
     if (this.settings.showSticker) {
       this.drawRealisticCheekSticker(ctx, pts, country, {
@@ -476,6 +496,361 @@ class ARRenderer {
     if (this.settings.showLabel) {
       this.drawCountryBadge(ctx, pts, country, rollAngle, faceWidth);
     }
+  }
+
+  drawTraditionalOutfit(ctx, pts, country, faceWidth) {
+    const chin = pts[152];
+    if (!chin || !faceWidth || !country.colors?.length) return;
+
+    const top = chin.y + faceWidth * 0.08;
+    const outfitWidth = faceWidth * 1.55;
+    const outfitHeight = faceWidth * 1.28;
+    const halfWidth = outfitWidth / 2;
+    const palette = country.colors;
+
+    ctx.save();
+    ctx.translate(chin.x, top);
+    ctx.lineJoin = 'round';
+
+    const garmentPath = () => {
+      ctx.beginPath();
+      ctx.moveTo(-faceWidth * 0.22, 0);
+      ctx.lineTo(-faceWidth * 0.4, faceWidth * 0.12);
+      ctx.lineTo(-halfWidth, faceWidth * 0.34);
+      ctx.lineTo(-halfWidth * 0.82, outfitHeight);
+      ctx.lineTo(halfWidth * 0.82, outfitHeight);
+      ctx.lineTo(halfWidth, faceWidth * 0.34);
+      ctx.lineTo(faceWidth * 0.4, faceWidth * 0.12);
+      ctx.lineTo(faceWidth * 0.22, 0);
+      ctx.quadraticCurveTo(0, faceWidth * 0.2, -faceWidth * 0.22, 0);
+      ctx.closePath();
+    };
+
+    const garmentGradient = ctx.createLinearGradient(-halfWidth, 0, halfWidth, outfitHeight);
+    garmentGradient.addColorStop(0, palette[0]);
+    garmentGradient.addColorStop(0.5, palette[1] || palette[0]);
+    garmentGradient.addColorStop(1, palette[2] || palette[0]);
+    ctx.fillStyle = garmentGradient;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = faceWidth * 0.08;
+    garmentPath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.save();
+    garmentPath();
+    ctx.clip();
+
+    const region = country.region;
+    if (region === 'west_africa' || region === 'southern_africa') {
+      const bandColors = palette.length > 2 ? palette : [palette[0], '#FDE68A', palette[1] || '#FFFFFF'];
+      bandColors.forEach((color, index) => {
+        const bandY = faceWidth * (0.3 + index * 0.19);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.78;
+        ctx.fillRect(-halfWidth, bandY, outfitWidth, faceWidth * 0.08);
+      });
+
+      ctx.globalAlpha = 0.48;
+      ctx.strokeStyle = '#FDE68A';
+      ctx.lineWidth = Math.max(1, faceWidth * 0.014);
+      for (let x = -halfWidth; x < halfWidth; x += faceWidth * 0.12) {
+        ctx.beginPath();
+        ctx.moveTo(x, faceWidth * 0.26);
+        ctx.lineTo(x + faceWidth * 0.11, faceWidth * 0.92);
+        ctx.stroke();
+      }
+    } else if (region === 'oceania') {
+      ctx.globalAlpha = 0.44;
+      ctx.strokeStyle = palette[1] || '#FFFFFF';
+      ctx.lineWidth = Math.max(1.5, faceWidth * 0.02);
+      for (let row = 0; row < 4; row++) {
+        const y = faceWidth * (0.32 + row * 0.18);
+        ctx.beginPath();
+        for (let x = -halfWidth; x <= halfWidth; x += faceWidth * 0.08) {
+          const waveY = y + Math.sin((x / faceWidth) * Math.PI * 2) * faceWidth * 0.035;
+          if (x === -halfWidth) ctx.moveTo(x, waveY);
+          else ctx.lineTo(x, waveY);
+        }
+        ctx.stroke();
+      }
+    } else {
+      ctx.globalAlpha = 0.38;
+      ctx.strokeStyle = palette[2] || '#FDE68A';
+      ctx.lineWidth = Math.max(1, faceWidth * 0.012);
+      const gap = faceWidth * 0.16;
+      for (let x = -halfWidth; x <= halfWidth; x += gap) {
+        for (let y = faceWidth * 0.3; y < outfitHeight; y += gap) {
+          ctx.beginPath();
+          ctx.moveTo(x, y - gap * 0.34);
+          ctx.lineTo(x + gap * 0.34, y);
+          ctx.lineTo(x, y + gap * 0.34);
+          ctx.lineTo(x - gap * 0.34, y);
+          ctx.closePath();
+          ctx.stroke();
+        }
+      }
+    }
+
+    ctx.globalAlpha = 1;
+    ctx.restore();
+
+    // A contrasting V-shaped collar gives the garment a clear neckline.
+    const trim = palette[palette.length - 1] || '#FDE68A';
+    ctx.fillStyle = trim;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.82)';
+    ctx.lineWidth = Math.max(1.5, faceWidth * 0.018);
+    ctx.beginPath();
+    ctx.moveTo(-faceWidth * 0.24, faceWidth * 0.025);
+    ctx.lineTo(0, faceWidth * 0.3);
+    ctx.lineTo(faceWidth * 0.24, faceWidth * 0.025);
+    ctx.lineTo(faceWidth * 0.14, faceWidth * 0.015);
+    ctx.lineTo(0, faceWidth * 0.18);
+    ctx.lineTo(-faceWidth * 0.14, faceWidth * 0.015);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.62)';
+    ctx.lineWidth = Math.max(1, faceWidth * 0.012);
+    ctx.beginPath();
+    ctx.moveTo(-halfWidth * 0.9, faceWidth * 0.34);
+    ctx.quadraticCurveTo(0, faceWidth * 0.47, halfWidth * 0.9, faceWidth * 0.34);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  drawFestivalGlasses(ctx, pts, metrics) {
+    const { rollAngle } = metrics;
+    const style = GLASSES_STYLES.find(item => item.id === this.settings.glassesStyle) || GLASSES_STYLES[0];
+    const eyeOuterL = pts[33];
+    const eyeInnerL = pts[133];
+    const eyeInnerR = pts[362];
+    const eyeOuterR = pts[263];
+    if (!eyeOuterL || !eyeInnerL || !eyeInnerR || !eyeOuterR) return;
+
+    const leftEye = {
+      x: (eyeOuterL.x + eyeInnerL.x) / 2,
+      y: (eyeOuterL.y + eyeInnerL.y) / 2
+    };
+    const rightEye = {
+      x: (eyeInnerR.x + eyeOuterR.x) / 2,
+      y: (eyeInnerR.y + eyeOuterR.y) / 2
+    };
+    const center = {
+      x: (leftEye.x + rightEye.x) / 2,
+      y: (leftEye.y + rightEye.y) / 2
+    };
+    const eyeDist = Math.hypot(eyeOuterR.x - eyeOuterL.x, eyeOuterR.y - eyeOuterL.y);
+    if (!eyeDist) return;
+
+    const project = point => {
+      const dx = point.x - center.x;
+      const dy = point.y - center.y;
+      return {
+        x: dx * Math.cos(rollAngle) + dy * Math.sin(rollAngle),
+        y: -dx * Math.sin(rollAngle) + dy * Math.cos(rollAngle)
+      };
+    };
+    const left = project(leftEye);
+    const right = project(rightEye);
+    const lensWidth = eyeDist * style.width;
+    const lensHeight = eyeDist * style.height;
+    const frameWidth = Math.max(2, eyeDist * 0.035);
+    const leftX = left.x - lensWidth / 2;
+    const rightX = right.x - lensWidth / 2;
+
+    const traceLens = (x, y) => {
+      ctx.beginPath();
+      if (style.shape === 'round') {
+        ctx.ellipse(x + lensWidth / 2, y + lensHeight / 2, lensWidth / 2, lensHeight / 2, 0, 0, Math.PI * 2);
+      } else if (style.shape === 'aviator') {
+        ctx.moveTo(x + lensWidth * 0.12, y);
+        ctx.quadraticCurveTo(x + lensWidth * 0.5, y - lensHeight * 0.04, x + lensWidth * 0.88, y);
+        ctx.lineTo(x + lensWidth * 0.78, y + lensHeight * 0.68);
+        ctx.quadraticCurveTo(x + lensWidth * 0.5, y + lensHeight * 1.12, x + lensWidth * 0.22, y + lensHeight * 0.68);
+        ctx.closePath();
+      } else if (style.shape === 'heart') {
+        ctx.moveTo(x + lensWidth * 0.5, y + lensHeight * 0.94);
+        ctx.bezierCurveTo(x + lensWidth * 0.38, y + lensHeight * 0.78, x - lensWidth * 0.08, y + lensHeight * 0.48, x + lensWidth * 0.12, y + lensHeight * 0.18);
+        ctx.bezierCurveTo(x + lensWidth * 0.24, y - lensHeight * 0.02, x + lensWidth * 0.43, y + lensHeight * 0.1, x + lensWidth * 0.5, y + lensHeight * 0.25);
+        ctx.bezierCurveTo(x + lensWidth * 0.57, y + lensHeight * 0.1, x + lensWidth * 0.76, y - lensHeight * 0.02, x + lensWidth * 0.88, y + lensHeight * 0.18);
+        ctx.bezierCurveTo(x + lensWidth * 1.08, y + lensHeight * 0.48, x + lensWidth * 0.62, y + lensHeight * 0.78, x + lensWidth * 0.5, y + lensHeight * 0.94);
+        ctx.closePath();
+      } else {
+        ctx.roundRect(x, y, lensWidth, lensHeight, lensHeight * 0.3);
+      }
+    };
+
+    ctx.save();
+    ctx.translate(center.x, center.y);
+    ctx.rotate(rollAngle);
+    ctx.lineJoin = 'round';
+
+    [left, right].forEach((eye, index) => {
+      const x = index === 0 ? leftX : rightX;
+      const y = eye.y - lensHeight / 2;
+      const lensGradient = ctx.createLinearGradient(0, y, 0, y + lensHeight);
+      lensGradient.addColorStop(0, style.lensTop);
+      lensGradient.addColorStop(1, style.lensBottom);
+      ctx.fillStyle = lensGradient;
+      ctx.strokeStyle = style.frame;
+      ctx.lineWidth = frameWidth * style.frameScale;
+      traceLens(x, y);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = style.reflection;
+      ctx.lineWidth = Math.max(1, frameWidth * 0.4);
+      ctx.beginPath();
+      ctx.moveTo(x + lensWidth * 0.2, y + lensHeight * 0.28);
+      ctx.lineTo(x + lensWidth * 0.48, y + lensHeight * 0.28);
+      ctx.stroke();
+    });
+
+    ctx.strokeStyle = style.frame;
+    ctx.lineWidth = frameWidth * style.frameScale;
+    ctx.beginPath();
+    ctx.moveTo(left.x + lensWidth / 2, left.y - lensHeight * 0.05);
+    ctx.quadraticCurveTo(0, left.y - lensHeight * 0.3, right.x - lensWidth / 2, right.y - lensHeight * 0.05);
+    ctx.stroke();
+
+    if (style.shape === 'aviator') {
+      ctx.beginPath();
+      ctx.moveTo(0, left.y - lensHeight * 0.35);
+      ctx.lineTo(0, left.y + lensHeight * 0.18);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(leftX, left.y);
+    ctx.lineTo(leftX - eyeDist * 0.12, left.y - lensHeight * 0.08);
+    ctx.moveTo(rightX + lensWidth, right.y);
+    ctx.lineTo(rightX + lensWidth + eyeDist * 0.12, right.y - lensHeight * 0.08);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  drawFestivalCap(ctx, pts, faceWidth, rollAngle) {
+    const forehead = pts[10];
+    if (!forehead || !faceWidth) return;
+
+    const width = faceWidth * 1.06;
+    const crownBase = -width * 0.04;
+    const crownTop = -width * 0.43;
+    const brimDepth = width * 0.18;
+
+    ctx.save();
+    ctx.translate(forehead.x, forehead.y - width * 0.1);
+    ctx.rotate(rollAngle);
+    ctx.lineJoin = 'round';
+
+    const crownPath = () => {
+      ctx.beginPath();
+      ctx.moveTo(-width * 0.43, crownBase);
+      ctx.bezierCurveTo(-width * 0.43, -width * 0.27, -width * 0.32, crownTop, 0, crownTop);
+      ctx.bezierCurveTo(width * 0.32, crownTop, width * 0.43, -width * 0.27, width * 0.43, crownBase);
+      ctx.quadraticCurveTo(0, width * 0.015, -width * 0.43, crownBase);
+      ctx.closePath();
+    };
+
+    const crownGradient = ctx.createLinearGradient(-width * 0.45, 0, width * 0.45, 0);
+    crownGradient.addColorStop(0, '#102A43');
+    crownGradient.addColorStop(0.48, '#256A9B');
+    crownGradient.addColorStop(1, '#123653');
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.28)';
+    ctx.shadowBlur = width * 0.035;
+    ctx.shadowOffsetY = width * 0.025;
+    ctx.fillStyle = crownGradient;
+    ctx.strokeStyle = 'rgba(222, 239, 249, 0.88)';
+    ctx.lineWidth = Math.max(1.5, width * 0.014);
+    crownPath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    ctx.save();
+    crownPath();
+    ctx.clip();
+
+    const fabricShade = ctx.createLinearGradient(0, crownTop, 0, crownBase);
+    fabricShade.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
+    fabricShade.addColorStop(0.72, 'rgba(255, 255, 255, 0.02)');
+    fabricShade.addColorStop(1, 'rgba(0, 0, 0, 0.24)');
+    ctx.fillStyle = fabricShade;
+    ctx.fillRect(-width * 0.45, crownTop, width * 0.9, crownBase - crownTop);
+
+    ctx.strokeStyle = 'rgba(220, 239, 250, 0.43)';
+    ctx.lineWidth = Math.max(1, width * 0.008);
+    ctx.beginPath();
+    ctx.moveTo(0, crownTop + width * 0.035);
+    ctx.bezierCurveTo(-width * 0.015, -width * 0.25, -width * 0.05, -width * 0.13, -width * 0.1, crownBase);
+    ctx.moveTo(0, crownTop + width * 0.035);
+    ctx.bezierCurveTo(width * 0.015, -width * 0.25, width * 0.05, -width * 0.13, width * 0.1, crownBase);
+    ctx.stroke();
+
+    [-1, 1].forEach(side => {
+      ctx.beginPath();
+      ctx.moveTo(0, crownTop + width * 0.04);
+      ctx.quadraticCurveTo(side * width * 0.23, -width * 0.27, side * width * 0.36, crownBase - width * 0.005);
+      ctx.stroke();
+    });
+
+    [-1, 1].forEach(side => {
+      ctx.fillStyle = 'rgba(8, 31, 49, 0.72)';
+      ctx.beginPath();
+      ctx.ellipse(side * width * 0.27, -width * 0.16, width * 0.018, width * 0.012, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    ctx.fillStyle = 'rgba(7, 28, 43, 0.48)';
+    ctx.beginPath();
+    ctx.ellipse(0, crownBase, width * 0.405, width * 0.035, 0, 0, Math.PI);
+    ctx.fill();
+
+    const brimGradient = ctx.createLinearGradient(0, crownBase, 0, crownBase + brimDepth);
+    brimGradient.addColorStop(0, '#347DA8');
+    brimGradient.addColorStop(0.55, '#205F87');
+    brimGradient.addColorStop(1, '#123B59');
+    ctx.fillStyle = brimGradient;
+    ctx.strokeStyle = 'rgba(222, 239, 249, 0.88)';
+    ctx.lineWidth = Math.max(1.5, width * 0.014);
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.41, crownBase - width * 0.005);
+    ctx.bezierCurveTo(-width * 0.33, crownBase + width * 0.025, -width * 0.24, crownBase + brimDepth * 0.12, 0, crownBase + brimDepth * 0.12);
+    ctx.bezierCurveTo(width * 0.24, crownBase + brimDepth * 0.12, width * 0.33, crownBase + width * 0.025, width * 0.41, crownBase - width * 0.005);
+    ctx.bezierCurveTo(width * 0.42, crownBase + brimDepth * 0.52, width * 0.2, crownBase + brimDepth, 0, crownBase + brimDepth * 0.94);
+    ctx.bezierCurveTo(-width * 0.2, crownBase + brimDepth, -width * 0.42, crownBase + brimDepth * 0.52, -width * 0.41, crownBase - width * 0.005);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(224, 240, 250, 0.52)';
+    ctx.lineWidth = Math.max(1, width * 0.007);
+    ctx.beginPath();
+    ctx.moveTo(-width * 0.34, crownBase + width * 0.045);
+    ctx.quadraticCurveTo(0, crownBase + brimDepth * 0.66, width * 0.34, crownBase + width * 0.045);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(220, 239, 250, 0.32)';
+    ctx.lineWidth = Math.max(1, width * 0.006);
+    ctx.beginPath();
+    ctx.ellipse(0, crownBase + brimDepth * 0.58, width * 0.26, width * 0.075, 0, 0, Math.PI);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(237, 190, 83, 0.96)';
+    ctx.beginPath();
+    ctx.arc(0, -width * 0.16, width * 0.055, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#123B59';
+    ctx.font = `bold ${Math.max(7, width * 0.06)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('★', 0, -width * 0.16);
+    ctx.restore();
   }
 
   /**
@@ -630,8 +1005,8 @@ class ARRenderer {
    * while naturally curving over the cheekbone and responding to facial movement.
    */
   drawRealisticCheekSticker(ctx, pts, country, metrics) {
-    const stickerTexture = window.TextureCache.getStickerTexture(country.id);
-    const { rollAngle, faceWidth, yawRatio } = metrics;
+    const stickerTexture = window.TextureCache.getStickerTexture(country.id, this.settings.stickerStyle);
+    const { rollAngle, faceWidth, faceHeight, yawRatio } = metrics;
 
     // Target decal size matching festival reference photo (~3cm x 2cm decal)
     const targetW = Math.max(8, Math.min(48, faceWidth * 0.135));
@@ -907,4 +1282,56 @@ class ARRenderer {
   }
 }
 
+const GLASSES_STYLES = [
+  {
+    id: 'classic',
+    label: 'Classic Clear',
+    shape: 'classic',
+    width: 0.43,
+    height: 0.19,
+    frame: '#080B10',
+    frameScale: 1,
+    lensTop: 'rgba(5, 8, 14, 0.08)',
+    lensBottom: 'rgba(2, 4, 8, 0.05)',
+    reflection: 'rgba(255, 255, 255, 0.34)'
+  },
+  {
+    id: 'round',
+    label: 'Round Clear',
+    shape: 'round',
+    width: 0.36,
+    height: 0.27,
+    frame: '#080B10',
+    frameScale: 1.15,
+    lensTop: 'rgba(16, 20, 27, 0.09)',
+    lensBottom: 'rgba(2, 4, 8, 0.05)',
+    reflection: 'rgba(255, 255, 255, 0.38)'
+  },
+  {
+    id: 'aviator',
+    label: 'Gold Aviator Clear',
+    shape: 'aviator',
+    width: 0.46,
+    height: 0.26,
+    frame: '#D5A642',
+    frameScale: 0.8,
+    lensTop: 'rgba(180, 132, 42, 0.08)',
+    lensBottom: 'rgba(8, 10, 14, 0.05)',
+    reflection: 'rgba(255, 231, 170, 0.48)'
+  },
+  {
+    id: 'heart',
+    label: 'Heart Party Clear',
+    shape: 'heart',
+    width: 0.45,
+    height: 0.28,
+    frame: '#F472B6',
+    frameScale: 0.82,
+    lensTop: 'rgba(244, 114, 182, 0.1)',
+    lensBottom: 'rgba(18, 7, 20, 0.05)',
+    reflection: 'rgba(255, 219, 242, 0.5)'
+  }
+];
+
+window.GLASSES_STYLES = GLASSES_STYLES;
 window.ARRenderer = ARRenderer;

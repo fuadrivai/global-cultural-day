@@ -732,8 +732,9 @@ const TextureCache = {
     return canvas;
   },
 
-  getStickerTexture(countryId) {
-    if (this.stickers[countryId]) return this.stickers[countryId];
+  getStickerTexture(countryId, style = 'flag') {
+    const cacheKey = `${countryId}:${style}`;
+    if (this.stickers[cacheKey]) return this.stickers[cacheKey];
     const country = COUNTRIES.find(c => c.id === countryId) || COUNTRIES[0];
 
     // High resolution cheek sticker decal (300x200 px, 3:2 ratio)
@@ -744,39 +745,67 @@ const TextureCache = {
 
     const w = canvas.width;
     const h = canvas.height;
-    const radius = 12; // Natural rounded corners
+    const radius = 12;
 
-    // 1. Clip to rounded rectangle
-    ctx.save();
-    ctx.beginPath();
-    ctx.roundRect(1.5, 1.5, w - 3, h - 3, radius);
-    ctx.clip();
+    if (style === 'flag') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(1.5, 1.5, w - 3, h - 3, radius);
+      ctx.clip();
 
-    // 2. Draw the country flag
-    country.draw(ctx, w, h);
+      country.draw(ctx, w, h);
 
-    // 3. Subtle skin lighting & satin decal finish
-    const sheen = ctx.createLinearGradient(0, 0, w, h);
-    sheen.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
-    sheen.addColorStop(0.3, 'rgba(255, 255, 255, 0.1)');
-    sheen.addColorStop(0.65, 'rgba(255, 255, 255, 0)');
-    sheen.addColorStop(1, 'rgba(0, 0, 0, 0.08)');
-    ctx.fillStyle = sheen;
-    ctx.fillRect(0, 0, w, h);
+      const sheen = ctx.createLinearGradient(0, 0, w, h);
+      sheen.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
+      sheen.addColorStop(0.3, 'rgba(255, 255, 255, 0.1)');
+      sheen.addColorStop(0.65, 'rgba(255, 255, 255, 0)');
+      sheen.addColorStop(1, 'rgba(0, 0, 0, 0.08)');
+      ctx.fillStyle = sheen;
+      ctx.fillRect(0, 0, w, h);
 
-    ctx.restore();
+      ctx.restore();
 
-    // 4. Ultra-thin clean white die-cut rim (1.5px) like real festival face stickers
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(1, 1, w - 2, h - 2, radius);
-    ctx.stroke();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(1, 1, w - 2, h - 2, radius);
+      ctx.stroke();
+    } else {
+      const icon = STICKER_STYLES.find(item => item.id === style)?.icon || STICKER_STYLES[0].icon;
 
-    this.stickers[countryId] = canvas;
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.24)';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+      ctx.beginPath();
+      ctx.arc(w / 2, h / 2, 86, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '142px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+      ctx.fillText(icon, w / 2, h / 2 + 3);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(w / 2, h / 2, 86, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    this.stickers[cacheKey] = canvas;
     return canvas;
   }
 };
+
+const STICKER_STYLES = [
+  { id: 'flag', label: 'Flag', icon: '🏳️' },
+  { id: 'heart', label: 'Heart', icon: '💖' },
+  { id: 'star', label: 'Star', icon: '⭐' },
+  { id: 'flower', label: 'Flower', icon: '🌸' },
+  { id: 'sparkle', label: 'Sparkle', icon: '✨' }
+];
 
 /**
  * Adds micro fabric weave pattern to the headband
@@ -837,3 +866,4 @@ function addStitchLines(ctx, w, h) {
 window.REGIONS = REGIONS;
 window.COUNTRIES = COUNTRIES;
 window.TextureCache = TextureCache;
+window.STICKER_STYLES = STICKER_STYLES;
