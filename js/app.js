@@ -535,22 +535,31 @@ class CulturalDayApp {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: dataUrl, format: 'jpg' })
       });
-      const result = await response.json();
-      if (result.success && result.viewUrl) {
+
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        console.error('save_photo.php returned a non-JSON response:', response.status, responseText.slice(0, 300));
+        if (response.status === 403) {
+          throw new Error('Access denied (HTTP 403). Ask your hosting administrator to allow access to save_photo.php.');
+        }
+        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
+      }
+
+      if (response.ok && result.success && result.viewUrl) {
         this.generateQRCode(result.viewUrl);
         return;
-      } else {
-        const errorMsg = result.error || `Server HTTP ${response.status}`;
-        console.error('save_photo.php error:', errorMsg);
-        this.showToast(`⚠️ Server: ${errorMsg}`, 5000);
       }
-    } catch (e) {
-      console.error('save_photo.php connection error:', e);
-      this.showToast('⚠️ Failed to save to server (Check photos folder permissions)', 4000);
-    }
 
-    // Fallback if server call fails
-    this.generateQRCode(window.location.href);
+      throw new Error(result.error || `Server HTTP ${response.status}`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error('save_photo.php request failed:', message);
+      this.qrcodeBox.innerHTML = '<span style="font-size:11px;color:#94a3b8;line-height:1.4;display:block;padding:20px 0;">Photo QR is unavailable. Use the Download JPG or PNG buttons instead.</span>';
+      this.showToast(`⚠️ Photo QR unavailable: ${message}`, 6000);
+    }
   }
 
   triggerConfetti() {
