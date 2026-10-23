@@ -1,0 +1,18 @@
+{
+  "name": "global-cultural-day",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mediapipe/face_mesh": "^0.4.1633559619",
+    "canvas-confetti": "^1.9.4",
+    "qrcode": "^1.5.4",
+    "qrcodejs2-fix": "^0.0.1"
+  }
+}
