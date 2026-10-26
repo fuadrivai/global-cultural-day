@@ -323,8 +323,8 @@
               font-weight: 600;
             "
           >
-            <option value="3" selected>3 Seconds</option>
-            <option value="5">5 Seconds</option>
+            <option value="3">3 Seconds</option>
+            <option value="5" selected>5 Seconds</option>
             <option value="10">10 Seconds</option>
           </select>
         </div>
@@ -354,7 +354,7 @@
           <div>
             <div class="setting-label">Face Tracking Sensitivity</div>
             <div class="setting-desc">
-              Anti-glitch filter for 2-3 meter distance
+              Use High for smaller or more distant faces
             </div>
           </div>
           <select
@@ -368,10 +368,8 @@
               font-weight: 600;
             "
           >
-            <option value="balanced" selected>
-              Balanced (2-3m Anti-Glitch)
-            </option>
-            <option value="high">High (Low Light)</option>
+            <option value="balanced" selected>Balanced</option>
+            <option value="high">High (Distant Faces)</option>
             <option value="strict">Strict (Maximum Stability)</option>
           </select>
         </div>
@@ -518,8 +516,10 @@
 
         <div class="setting-item">
           <div>
-            <div class="setting-label">Mirror Camera (Selfie Mode)</div>
-            <div class="setting-desc">Horizontally mirrors webcam video</div>
+            <div class="setting-label">Mirror Camera Preview</div>
+            <div class="setting-desc">
+              Live preview is mirrored; saved photos use normal orientation
+            </div>
           </div>
           <label class="switch">
             <input type="checkbox" id="checkMirror" checked />
@@ -572,6 +572,6 @@
     <script src="js/flags.js?v=20261023-1"></script>
     <script src="js/audio.js?v=20261023-1"></script>
     <script src="js/renderer.js?v=20261023-1"></script>
-    <script src="js/app.js?v=20261023-3"></script>
+    <script src="js/app.js?v=20261026-1"></script>
   </body>
 </html>

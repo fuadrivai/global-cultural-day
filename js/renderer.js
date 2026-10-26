@@ -119,8 +119,8 @@ class ARRenderer {
     const faceHeight = Math.hypot(p152.x - p10.x, p152.y - p10.y);
     const eyeDist = Math.hypot(p263.x - p33.x, p263.y - p33.y);
 
-    // 1. Minimum dimension check: At 2-3 meters, a valid face is at least 25px tall and 10px eye-distance
-    if (faceHeight < 25 || eyeDist < 10) return false;
+    // 1. Keep small faces detectable at a distance while rejecting near-zero landmarks.
+    if (faceHeight < 16 || eyeDist < 6) return false;
 
     // 2. Anatomical proportion: Eye distance vs Face height must be in realistic human bounds (0.20 to 0.78)
     const eyeToHeightRatio = eyeDist / faceHeight;
@@ -140,7 +140,7 @@ class ARRenderer {
     }
     const bbWidth = maxX - minX;
     const bbHeight = maxY - minY;
-    if (bbHeight < 24 || bbWidth < 18) return false;
+    if (bbHeight < 14 || bbWidth < 12) return false;
     const aspectRatio = bbWidth / bbHeight;
     if (aspectRatio < 0.38 || aspectRatio > 1.45) return false;
 
@@ -148,7 +148,7 @@ class ARRenderer {
     const vX = p152.x - p10.x;
     const vY = p152.y - p10.y;
     const vLenSq = vX * vX + vY * vY;
-    if (vLenSq < 100) return false;
+    if (vLenSq < 144) return false;
 
     // Nose projection onto head vector
     const projNose = ((p1.x - p10.x) * vX + (p1.y - p10.y) * vY) / vLenSq;

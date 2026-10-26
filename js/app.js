@@ -61,6 +61,11 @@ class CulturalDayApp {
   }
 
   syncDefaultSettings() {
+    const selectCountdownDuration = document.getElementById('selectCountdownDuration');
+    if (selectCountdownDuration) {
+      this.countdownDuration = parseInt(selectCountdownDuration.value, 10) || 3;
+    }
+
     const checkHeadband = document.getElementById('checkHeadband');
     if (checkHeadband) checkHeadband.checked = this.renderer.settings.showHeadband;
 
@@ -221,8 +226,8 @@ class CulturalDayApp {
     this.faceMesh.setOptions({
       maxNumFaces: 6, // Supports up to 6 faces simultaneously with rock-solid stability
       refineLandmarks: false, // Distant faces don't need iris model; allows small face detection
-      minDetectionConfidence: 0.45, // Optimal: rejects clothes/neck folds, reliably detects distant faces at 2-3m
-      minTrackingConfidence: 0.45 // Maintains tracking without drifting onto clothing or background
+      minDetectionConfidence: 0.35,
+      minTrackingConfidence: 0.35
     });
 
     this.faceMesh.onResults(results => this.onFaceMeshResults(results));
@@ -385,6 +390,11 @@ class CulturalDayApp {
     previewCanvas.width = srcCanvas.width;
     previewCanvas.height = srcCanvas.height;
     const pctx = previewCanvas.getContext('2d');
+
+    if (this.renderer.settings.mirrorCamera && !this.isStaticMode) {
+      pctx.translate(previewCanvas.width, 0);
+      pctx.scale(-1, 1);
+    }
     pctx.drawImage(srcCanvas, 0, 0);
 
     // 2. Generate commemorative polaroid card export canvas
@@ -869,8 +879,8 @@ class CulturalDayApp {
     if (selSensitivity) {
       selSensitivity.addEventListener('change', e => {
         const val = e.target.value;
-        let conf = 0.45;
-        if (val === 'high') conf = 0.35;
+        let conf = 0.35;
+        if (val === 'high') conf = 0.25;
         else if (val === 'strict') conf = 0.55;
 
         if (this.faceMesh) {

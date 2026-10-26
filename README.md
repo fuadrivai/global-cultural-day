@@ -38,6 +38,7 @@ Aplikasi **Interactive AR Webcam Filter** bertema **Global Cultural Day** dengan
 
 6. **⚙️ Kontrol Fleksibel & 100% Offline Ready**
    - Semua aset model MediaPipe telah diunduh lokal di folder `vendor/`, sehingga aplikasi dapat berjalan lancar tanpa koneksi internet di venue acara.
+   - Sensitivitas deteksi wajah dapat diatur ke **High** untuk membantu mendeteksi wajah yang kecil atau jauh.
    - Tombol Layar Penuh (F11 / Fullscreen Kiosk Mode).
    - Tombol Upload Foto: Anda juga dapat menguji coba filter dengan mengunggah foto grup dari komputer.
 
