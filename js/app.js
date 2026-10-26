@@ -539,6 +539,7 @@ class CulturalDayApp {
   async uploadPhotoForQR() {
     if (!this.lastExportCanvas) return;
     this.qrcodeBox.innerHTML = '';
+    this.qrcodeBox.hidden = false;
     this.photoUploadStatus.hidden = false;
     this.photoUploadProgress.hidden = false;
     this.photoUploadProgress.value = 0;
@@ -601,6 +602,7 @@ class CulturalDayApp {
         this.photoUploadStatusText.textContent = 'Foto tersimpan. QR siap dipindai.';
         document.getElementById('qrCodeHelp').textContent =
           '📲 Scan QR code ini dengan smartphone untuk membuka foto.';
+        this.qrcodeBox.hidden = false;
         this.generateQRCode(result.viewUrl);
         return;
       }
@@ -611,9 +613,10 @@ class CulturalDayApp {
       console.error('save_photo.php request failed:', message);
       this.photoUploadProgress.hidden = true;
       this.photoUploadStatusText.textContent = 'Foto gagal tersimpan online.';
+      this.qrcodeBox.innerHTML = '';
+      this.qrcodeBox.hidden = true;
       document.getElementById('qrCodeHelp').textContent =
-        '📲 Scan to open the booth page. This photo was not saved online; use Download JPG or PNG.';
-      this.generateQRCode(window.location.href);
+        'QR foto tidak tersedia karena server belum berhasil menyimpan foto. Gunakan tombol Download JPG atau PNG.';
       this.showToast(`⚠️ Photo QR unavailable: ${message}`, 6000);
     }
   }
