@@ -126,12 +126,6 @@
 
           <!-- Right Side Quick Action Dock -->
           <aside class="side-dock">
-            <p class="side-dock-hint">
-              <strong>Try the filters</strong>
-              <span
-                >Tap an option to turn it on or change its style anytime.</span
-              >
-            </p>
             <button class="action-pill-btn" id="btnSideShuffle">
               <span>🎲</span> Shuffle Flags
             </button>
@@ -189,6 +183,14 @@
 
           <!-- Bottom Controls Dock -->
           <footer class="bottom-dock">
+            <!-- Big Camera Shutter Trigger -->
+            <div class="shutter-wrapper interactive-control">
+              <div class="shutter-pulse"></div>
+              <button class="shutter-btn" id="btnShutter" title="Take Photo">
+                <span>📸</span>
+              </button>
+            </div>
+
             <!-- Region Selector Bar -->
             <nav class="region-bar interactive-control" id="regionBar">
               <button class="region-tab active" data-region="all">
@@ -213,14 +215,6 @@
                 <span>🌊</span> Oceania
               </button>
             </nav>
-
-            <!-- Big Camera Shutter Trigger -->
-            <div class="shutter-wrapper interactive-control">
-              <div class="shutter-pulse"></div>
-              <button class="shutter-btn" id="btnShutter" title="Take Photo">
-                <span>📸</span>
-              </button>
-            </div>
           </footer>
         </div>
       </div>
@@ -264,7 +258,8 @@
           <div class="qr-section">
             <div id="qrcodeBox"></div>
             <span id="qrCodeHelp"
-              >📲 Scan this QR code on your smartphone to download your photo.</span
+              >📲 Scan this QR code on your smartphone to download your
+              photo.</span
             >
           </div>
 
