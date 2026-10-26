@@ -13,7 +13,7 @@
     />
 
     <!-- Design Stylesheet -->
-    <link rel="stylesheet" href="css/style.css?v=20261023-2" />
+    <link rel="stylesheet" href="css/style.css?v=20261026-1" />
     <link rel="icon" type="image/png" href="assets/images/icon.png" />
   </head>
 
@@ -265,6 +265,16 @@
             >
               <span id="photoUploadStatusText">Menyiapkan foto...</span>
               <progress id="photoUploadProgress" max="100" value="0"></progress>
+            </div>
+            <div id="photoSaveError" class="photo-save-error" role="alert" hidden>
+              <div class="photo-save-error-icon" aria-hidden="true">!</div>
+              <h3>Foto gagal disimpan</h3>
+              <p id="photoSaveErrorMessage">
+                Foto ini belum tersimpan online, jadi QR untuk membuka foto tidak tersedia.
+              </p>
+              <p class="photo-save-error-hint">
+                Foto tetap bisa disimpan ke perangkat ini menggunakan tombol Download JPG atau PNG.
+              </p>
             </div>
             <span id="qrCodeHelp"
               >📲 Scan this QR code on your smartphone to download your
@@ -581,6 +591,6 @@
     <script src="js/flags.js?v=20261023-1"></script>
     <script src="js/audio.js?v=20261023-1"></script>
     <script src="js/renderer.js?v=20261023-1"></script>
-    <script src="js/app.js?v=20261026-3"></script>
+    <script src="js/app.js?v=20261026-4"></script>
   </body>
 </html>

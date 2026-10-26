@@ -36,6 +36,8 @@ class CulturalDayApp {
     this.photoUploadStatus = document.getElementById('photoUploadStatus');
     this.photoUploadStatusText = document.getElementById('photoUploadStatusText');
     this.photoUploadProgress = document.getElementById('photoUploadProgress');
+    this.photoSaveError = document.getElementById('photoSaveError');
+    this.photoSaveErrorMessage = document.getElementById('photoSaveErrorMessage');
     this.qrInstance = null;
 
     // Settings Modal elements
@@ -543,6 +545,8 @@ class CulturalDayApp {
     this.photoUploadStatus.hidden = false;
     this.photoUploadProgress.hidden = false;
     this.photoUploadProgress.value = 0;
+    this.photoSaveError.hidden = true;
+    document.getElementById('qrCodeHelp').hidden = false;
     this.photoUploadStatusText.textContent = 'Menyiapkan foto untuk diunggah...';
 
     try {
@@ -600,8 +604,10 @@ class CulturalDayApp {
         this.photoUploadProgress.value = 100;
         this.photoUploadProgress.hidden = true;
         this.photoUploadStatusText.textContent = 'Foto tersimpan. QR siap dipindai.';
+        this.photoSaveError.hidden = true;
         document.getElementById('qrCodeHelp').textContent =
           '📲 Scan QR code ini dengan smartphone untuk membuka foto.';
+        document.getElementById('qrCodeHelp').hidden = false;
         this.qrcodeBox.hidden = false;
         this.generateQRCode(result.viewUrl);
         return;
@@ -611,12 +617,14 @@ class CulturalDayApp {
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error('save_photo.php request failed:', message);
-      this.photoUploadProgress.hidden = true;
-      this.photoUploadStatusText.textContent = 'Foto gagal tersimpan online.';
+      this.photoUploadStatus.hidden = true;
       this.qrcodeBox.innerHTML = '';
       this.qrcodeBox.hidden = true;
-      document.getElementById('qrCodeHelp').textContent =
-        'QR foto tidak tersedia karena server belum berhasil menyimpan foto. Gunakan tombol Download JPG atau PNG.';
+      document.getElementById('qrCodeHelp').hidden = true;
+      this.photoSaveErrorMessage.textContent = message.includes('HTTP 403')
+        ? 'Server menolak upload foto (HTTP 403), sehingga foto ini belum tersimpan online dan QR foto tidak tersedia. Silakan hubungi administrator hosting.'
+        : `Foto ini belum tersimpan online, sehingga QR foto tidak tersedia. Detail: ${message}`;
+      this.photoSaveError.hidden = false;
       this.showToast(`⚠️ Photo QR unavailable: ${message}`, 6000);
     }
   }
