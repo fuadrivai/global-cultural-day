@@ -39,32 +39,61 @@ if (!is_writable($uploadDir)) {
     }
 }
 
-// 2. Read JSON payload
-$rawInput = file_get_contents('php://input');
-$data = json_decode($rawInput, true);
+// 2. Accept multipart uploads; retain JSON support for older clients.
+$format = (!empty($_POST['format']) && strtolower($_POST['format']) === 'png') ? 'png' : 'jpg';
+$uploadedFile = $_FILES['image'] ?? null;
 
-if (!$data || empty($data['image'])) {
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'error' => 'No image data received or payload exceeds server POST limit (post_max_size / client_max_body_size). Please check your server configuration.'
-    ]);
-    exit;
-}
+if ($uploadedFile !== null) {
+    if ($uploadedFile['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($uploadedFile['tmp_name'])) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Photo upload failed. Check the server upload_max_filesize and post_max_size limits.'
+        ]);
+        exit;
+    }
 
-$format = (!empty($data['format']) && strtolower($data['format']) === 'png') ? 'png' : 'jpg';
-$base64String = $data['image'];
+    $decodedData = file_get_contents($uploadedFile['tmp_name']);
+    if ($decodedData === false || $decodedData === '') {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Uploaded photo is empty or could not be read.']);
+        exit;
+    }
 
-// Strip data URI header
-if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $type)) {
-    $base64String = substr($base64String, strpos($base64String, ',') + 1);
-}
+    $imageInfo = @getimagesize($uploadedFile['tmp_name']);
+    if ($imageInfo === false || !in_array($imageInfo['mime'], ['image/jpeg', 'image/png'], true)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Only JPEG and PNG photos can be uploaded.']);
+        exit;
+    }
 
-$decodedData = base64_decode($base64String);
-if ($decodedData === false) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'Base64 decode failed']);
-    exit;
+    $format = $imageInfo['mime'] === 'image/png' ? 'png' : 'jpg';
+} else {
+    $rawInput = file_get_contents('php://input');
+    $data = json_decode($rawInput, true);
+
+    if (!$data || empty($data['image'])) {
+        http_response_code(400);
+        echo json_encode([
+            'success' => false,
+            'error' => 'No image data received or payload exceeds the server POST limit (post_max_size / client_max_body_size).'
+        ]);
+        exit;
+    }
+
+    $format = (!empty($data['format']) && strtolower($data['format']) === 'png') ? 'png' : 'jpg';
+    $base64String = $data['image'];
+
+    if (preg_match('/^data:image\/(\w+);base64,/', $base64String)) {
+        $base64String = substr($base64String, strpos($base64String, ',') + 1);
+    }
+
+    $decodedData = base64_decode($base64String, true);
+    if ($decodedData === false) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Base64 decode failed']);
+        exit;
+    }
 }
 
 // 3. Generate unique file name

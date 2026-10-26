@@ -537,13 +537,23 @@ class CulturalDayApp {
     if (!this.lastExportCanvas) return;
     this.qrcodeBox.innerHTML = '<span style="font-size:11px;color:#94a3b8;line-height:1.4;display:block;padding:20px 0;">Preparing download link...</span>';
 
-    const dataUrl = this.lastExportCanvas.toDataURL('image/jpeg', 0.92);
-
     try {
+      const photoBlob = await new Promise((resolve, reject) => {
+        this.lastExportCanvas.toBlob(blob => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Could not prepare the photo for upload.'));
+          }
+        }, 'image/jpeg', 0.92);
+      });
+      const formData = new FormData();
+      formData.append('image', photoBlob, 'photo.jpg');
+      formData.append('format', 'jpg');
+
       const response = await fetch('save_photo.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: dataUrl, format: 'jpg' })
+        body: formData
       });
 
       const responseText = await response.text();
