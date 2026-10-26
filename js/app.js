@@ -33,6 +33,9 @@ class CulturalDayApp {
     this.photoModal = document.getElementById('photoModal');
     this.photoPreviewCanvas = document.getElementById('photoPreviewCanvas');
     this.qrcodeBox = document.getElementById('qrcodeBox');
+    this.photoUploadStatus = document.getElementById('photoUploadStatus');
+    this.photoUploadStatusText = document.getElementById('photoUploadStatusText');
+    this.photoUploadProgress = document.getElementById('photoUploadProgress');
     this.qrInstance = null;
 
     // Settings Modal elements
@@ -535,7 +538,11 @@ class CulturalDayApp {
    */
   async uploadPhotoForQR() {
     if (!this.lastExportCanvas) return;
-    this.qrcodeBox.innerHTML = '<span style="font-size:11px;color:#94a3b8;line-height:1.4;display:block;padding:20px 0;">Preparing download link...</span>';
+    this.qrcodeBox.innerHTML = '';
+    this.photoUploadStatus.hidden = false;
+    this.photoUploadProgress.hidden = false;
+    this.photoUploadProgress.value = 0;
+    this.photoUploadStatusText.textContent = 'Menyiapkan foto untuk diunggah...';
 
     try {
       const photoBlob = await new Promise((resolve, reject) => {
@@ -551,17 +558,37 @@ class CulturalDayApp {
       formData.append('image', photoBlob, 'photo.jpg');
       formData.append('format', 'jpg');
 
-      const response = await fetch('save_photo.php', {
-        method: 'POST',
-        body: formData
+      this.photoUploadStatusText.textContent = 'Mengunggah foto: 0%';
+      const response = await new Promise((resolve, reject) => {
+        const request = new XMLHttpRequest();
+        request.open('POST', 'save_photo.php');
+        request.upload.addEventListener('progress', event => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            this.photoUploadProgress.value = percent;
+            this.photoUploadStatusText.textContent = `Mengunggah foto: ${percent}%`;
+          }
+        });
+        request.upload.addEventListener('load', () => {
+          this.photoUploadStatusText.textContent = 'Foto terkirim. Menunggu server menyimpan...';
+        });
+        request.addEventListener('load', () => {
+          resolve({
+            ok: request.status >= 200 && request.status < 300,
+            status: request.status,
+            responseText: request.responseText
+          });
+        });
+        request.addEventListener('error', () => reject(new Error('Network error while uploading photo.')));
+        request.addEventListener('abort', () => reject(new Error('Photo upload was cancelled.')));
+        request.send(formData);
       });
 
-      const responseText = await response.text();
       let result;
       try {
-        result = JSON.parse(responseText);
+        result = JSON.parse(response.responseText);
       } catch {
-        console.error('save_photo.php returned a non-JSON response:', response.status, responseText.slice(0, 300));
+        console.error('save_photo.php returned a non-JSON response:', response.status, response.responseText.slice(0, 300));
         if (response.status === 403) {
           throw new Error('Access denied (HTTP 403). Ask your hosting administrator to allow access to save_photo.php.');
         }
@@ -569,6 +596,11 @@ class CulturalDayApp {
       }
 
       if (response.ok && result.success && result.viewUrl) {
+        this.photoUploadProgress.value = 100;
+        this.photoUploadProgress.hidden = true;
+        this.photoUploadStatusText.textContent = 'Foto tersimpan. QR siap dipindai.';
+        document.getElementById('qrCodeHelp').textContent =
+          '📲 Scan QR code ini dengan smartphone untuk membuka foto.';
         this.generateQRCode(result.viewUrl);
         return;
       }
@@ -577,6 +609,8 @@ class CulturalDayApp {
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       console.error('save_photo.php request failed:', message);
+      this.photoUploadProgress.hidden = true;
+      this.photoUploadStatusText.textContent = 'Foto gagal tersimpan online.';
       document.getElementById('qrCodeHelp').textContent =
         '📲 Scan to open the booth page. This photo was not saved online; use Download JPG or PNG.';
       this.generateQRCode(window.location.href);

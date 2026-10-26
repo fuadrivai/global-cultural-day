@@ -681,6 +681,23 @@ body {
   margin-bottom: 10px;
 }
 
+.photo-upload-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 240px;
+  margin-bottom: 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+#photoUploadProgress {
+  width: 100%;
+  height: 8px;
+  accent-color: #06B6D4;
+}
+
 .qr-section span {
   font-size: 12px;
   color: var(--text-muted);

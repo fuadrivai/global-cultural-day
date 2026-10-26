@@ -257,6 +257,10 @@
           <!-- QR Code Section -->
           <div class="qr-section">
             <div id="qrcodeBox"></div>
+            <div id="photoUploadStatus" class="photo-upload-status" role="status" aria-live="polite">
+              <span id="photoUploadStatusText">Menyiapkan foto...</span>
+              <progress id="photoUploadProgress" max="100" value="0"></progress>
+            </div>
             <span id="qrCodeHelp"
               >📲 Scan this QR code on your smartphone to download your
               photo.</span
