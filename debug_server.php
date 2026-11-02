@@ -1,6 +1,6 @@
 <?php
 /**
- * Global Cultural Day - Server Storage Diagnostic Tool
+ * Language Fair - Server Storage Diagnostic Tool
  * Buka file ini di browser (contoh: https://domain-anda.com/debug_server.php)
  * untuk mengetahui secara pasti penyebab foto tidak tersimpan di server.
  */
@@ -105,7 +105,7 @@ $results[] = [
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Diagnostik Server - Global Cultural Day</title>
+  <title>Diagnostik Server - Language Fair</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 30px 20px; line-height: 1.6; }
     .container { max-width: 680px; margin: 0 auto; background: #1e293b; border-radius: 16px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }

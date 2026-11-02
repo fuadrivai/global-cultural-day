@@ -1,5 +1,5 @@
 /**
- * Global Cultural Day - Flag and Country Definitions
+ * Language Fair - Flag and Country Definitions
  * Includes high-fidelity canvas vector renderers for headbands and cheek stickers
  */
 

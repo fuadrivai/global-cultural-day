@@ -1,5 +1,5 @@
 /**
- * Global Cultural Day - Realistic AR Filter Renderer
+ * Language Fair - Realistic AR Filter Renderer
  * Handles multi-face tracking, perspective warping, 3D cylindrical headband rendering,
  * and realistic cheek sticker decals.
  */
@@ -13,15 +13,15 @@ class ARRenderer {
     this.trackedFaces = new Map(); // id -> { countryId, lastX, lastY, lastSeen, smoothLandmarks }
     this.nextFaceId = 1;
 
-    // Filter settings (Bandana and Country Label hidden by default per user request)
+    // Effects are opt-in so the camera starts unobstructed.
     this.settings = {
-      showHeadband: false, // Default: OFF (tidak terlihat)
-      showSticker: true,   // Default: ON (hanya stiker terlihat)
+      showHeadband: false,
+      showSticker: false,
       showGlasses: false,
       glassesStyle: 'classic',
       showHat: false,
       showOutfit: false,
-      showLabel: false,    // Default: OFF (tidak terlihat)
+      showLabel: false,
       stickerSide: 'right', // 'right', 'left', or 'both'
       stickerStyle: 'flag',
       activeRegion: 'all',

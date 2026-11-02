@@ -1,5 +1,5 @@
 /**
- * Global Cultural Day - Main Application Controller
+ * Language Fair - Main Application Controller
  * Handles webcam stream, MediaPipe FaceMesh processing, UI interactions,
  * countdown photo capture, and QR code generation.
  */
@@ -71,26 +71,8 @@ class CulturalDayApp {
       this.countdownDuration = parseInt(selectCountdownDuration.value, 10) || 3;
     }
 
-    const checkHeadband = document.getElementById('checkHeadband');
-    if (checkHeadband) checkHeadband.checked = this.renderer.settings.showHeadband;
-
-    const checkLabel = document.getElementById('checkLabel');
-    if (checkLabel) checkLabel.checked = this.renderer.settings.showLabel;
-
-    const checkSticker = document.getElementById('checkSticker');
-    if (checkSticker) checkSticker.checked = this.renderer.settings.showSticker;
-
-    const checkGlasses = document.getElementById('checkGlasses');
-    if (checkGlasses) checkGlasses.checked = this.renderer.settings.showGlasses;
-
     const selectGlassesStyle = document.getElementById('selectGlassesStyle');
     if (selectGlassesStyle) selectGlassesStyle.value = this.renderer.settings.glassesStyle;
-
-    const checkHat = document.getElementById('checkHat');
-    if (checkHat) checkHat.checked = this.renderer.settings.showHat;
-
-    const checkOutfit = document.getElementById('checkOutfit');
-    if (checkOutfit) checkOutfit.checked = this.renderer.settings.showOutfit;
 
     const selectStickerStyle = document.getElementById('selectStickerStyle');
     if (selectStickerStyle) selectStickerStyle.value = this.renderer.settings.stickerStyle;
@@ -103,11 +85,46 @@ class CulturalDayApp {
     const glassesStyleLabel = document.getElementById('glassesStyleLabel');
     if (glassesStyle && glassesStyleLabel) glassesStyleLabel.textContent = glassesStyle.label;
 
-    document.getElementById('btnToggleBandana').setAttribute('aria-pressed', this.renderer.settings.showHeadband);
-    document.getElementById('btnToggleSticker').setAttribute('aria-pressed', this.renderer.settings.showSticker);
-    document.getElementById('btnToggleGlasses').setAttribute('aria-pressed', this.renderer.settings.showGlasses);
-    document.getElementById('btnToggleHat').setAttribute('aria-pressed', this.renderer.settings.showHat);
-    document.getElementById('btnToggleOutfit').setAttribute('aria-pressed', this.renderer.settings.showOutfit);
+    this.syncEffectControls();
+  }
+
+  syncEffectControls() {
+    const controls = [
+      { setting: 'showHeadband', checkbox: 'checkHeadband', button: 'btnToggleBandana' },
+      { setting: 'showSticker', checkbox: 'checkSticker', button: 'btnToggleSticker' },
+      { setting: 'showGlasses', checkbox: 'checkGlasses', button: 'btnToggleGlasses' },
+      { setting: 'showHat', checkbox: 'checkHat', button: 'btnToggleHat' },
+      { setting: 'showOutfit', checkbox: 'checkOutfit', button: 'btnToggleOutfit' },
+      { setting: 'showLabel', checkbox: 'checkLabel' }
+    ];
+
+    controls.forEach(({ setting, checkbox, button }) => {
+      const enabled = this.renderer.settings[setting];
+      const checkboxElement = document.getElementById(checkbox);
+      if (checkboxElement) checkboxElement.checked = enabled;
+      if (button) {
+        document.getElementById(button).setAttribute('aria-pressed', enabled);
+      }
+    });
+
+    this.syncStickerControlsVisibility();
+  }
+
+  syncStickerControlsVisibility() {
+    const controls = document.getElementById('stickerControls');
+    const toggle = document.getElementById('btnToggleStickerControls');
+    const isVisible = !controls.hidden;
+    const label = isVisible ? 'Hide sticker controls' : 'Show sticker controls';
+
+    toggle.setAttribute('aria-expanded', isVisible);
+    toggle.setAttribute('aria-label', label);
+    toggle.title = label;
+    toggle.textContent = isVisible ? '👁️' : '🙈';
+  }
+
+  setEffectEnabled(setting, enabled) {
+    this.renderer.settings[setting] = enabled;
+    this.syncEffectControls();
   }
 
   setupDateDisplay() {
@@ -251,7 +268,7 @@ class CulturalDayApp {
     // Hide loading screen
     setTimeout(() => {
       this.loadingScreen.classList.add('hidden');
-      this.showToast('✨ Welcome to Global Cultural Day AR Booth!');
+      this.showToast('✨ Welcome to Language Fair AR Booth!');
     }, 600);
   }
 
@@ -436,22 +453,39 @@ class CulturalDayApp {
     const ctx = exportCanvas.getContext('2d');
 
     const cardGradient = ctx.createLinearGradient(0, 0, exportCanvas.width, exportCanvas.height);
-    cardGradient.addColorStop(0, '#111827');
-    cardGradient.addColorStop(0.56, '#172554');
-    cardGradient.addColorStop(1, '#0F172A');
+    cardGradient.addColorStop(0, '#54172F');
+    cardGradient.addColorStop(0.56, '#35101F');
+    cardGradient.addColorStop(1, '#240A16');
     ctx.fillStyle = cardGradient;
     ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+    ctx.save();
+    ctx.strokeStyle = 'rgba(239, 190, 151, 0.12)';
+    ctx.lineWidth = 1;
+    for (let y = 18; y < exportCanvas.height; y += 28) {
+      for (let x = 18; x < exportCanvas.width; x += 28) {
+        ctx.beginPath();
+        ctx.moveTo(x, y - 2.5);
+        ctx.lineTo(x + 2.5, y);
+        ctx.lineTo(x, y + 2.5);
+        ctx.lineTo(x - 2.5, y);
+        ctx.closePath();
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(239, 190, 151, 0.48)';
     ctx.lineWidth = 2;
     ctx.roundRect(1, 1, exportCanvas.width - 2, exportCanvas.height - 2, 26);
     ctx.stroke();
 
     const accentGradient = ctx.createLinearGradient(padding, 0, exportCanvas.width - padding, 0);
-    accentGradient.addColorStop(0, '#06B6D4');
-    accentGradient.addColorStop(0.38, '#FFFFFF');
-    accentGradient.addColorStop(0.7, '#F59E0B');
-    accentGradient.addColorStop(1, '#F43F5E');
+    accentGradient.addColorStop(0, 'rgba(217, 169, 120, 0)');
+    accentGradient.addColorStop(0.18, '#D9A978');
+    accentGradient.addColorStop(0.5, '#F6E2C8');
+    accentGradient.addColorStop(0.82, '#D9A978');
+    accentGradient.addColorStop(1, 'rgba(217, 169, 120, 0)');
     ctx.fillStyle = accentGradient;
     ctx.fillRect(padding, 0, exportCanvas.width - padding * 2, 5);
 
@@ -474,25 +508,25 @@ class CulturalDayApp {
     }
 
     const textX = iconX + iconSize + 13;
-    ctx.fillStyle = '#A5F3FC';
+    ctx.fillStyle = '#F0C9B8';
     ctx.font = '800 15px "Plus Jakarta Sans", system-ui, sans-serif';
     ctx.fillText('MUTIARA HARAPAN ISLAMIC SCHOOL', textX, padding + 31);
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = '800 25px "Outfit", system-ui, sans-serif';
-    ctx.fillText('GLOBAL CULTURAL DAY', textX, padding + 60);
+    ctx.fillText('LANGUAGE FAIR', textX, padding + 60);
 
     const yearPillWidth = 82;
     const yearPillX = exportCanvas.width - padding - yearPillWidth;
     const yearPillY = padding + 22;
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
-    ctx.strokeStyle = 'rgba(253, 230, 138, 0.65)';
+    ctx.fillStyle = 'rgba(217, 169, 120, 0.16)';
+    ctx.strokeStyle = 'rgba(239, 190, 151, 0.7)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.roundRect(yearPillX, yearPillY, yearPillWidth, 34, 17);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = '#FDE68A';
+    ctx.fillStyle = '#F3D5A5';
     ctx.font = '800 17px "Outfit", system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -507,7 +541,7 @@ class CulturalDayApp {
     ctx.drawImage(photo, photoX, photoY);
     ctx.restore();
 
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+    ctx.strokeStyle = 'rgba(239, 190, 151, 0.55)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(photoX, photoY, photo.width, photo.height, 12);
@@ -515,9 +549,9 @@ class CulturalDayApp {
 
     const footerY = photoBottom + 19;
     const footerAccent = ctx.createLinearGradient(padding, 0, padding + 72, 0);
-    footerAccent.addColorStop(0, '#06B6D4');
-    footerAccent.addColorStop(0.55, '#F59E0B');
-    footerAccent.addColorStop(1, '#F43F5E');
+    footerAccent.addColorStop(0, '#D9A978');
+    footerAccent.addColorStop(0.55, '#F6E2C8');
+    footerAccent.addColorStop(1, '#D9A978');
     ctx.fillStyle = footerAccent;
     ctx.beginPath();
     ctx.roundRect(padding + 2, footerY, 76, 4, 2);
@@ -731,26 +765,28 @@ class CulturalDayApp {
     document.getElementById('btnSideShuffle').addEventListener('click', handleShuffle);
 
     // 4. Side Toggle Buttons
+    document.getElementById('btnToggleStickerControls').addEventListener('click', () => {
+      const controls = document.getElementById('stickerControls');
+      controls.hidden = !controls.hidden;
+      this.syncStickerControlsVisibility();
+      window.soundManager.playPop();
+      this.showToast(controls.hidden ? '🙈 Sticker controls hidden' : '✨ Sticker controls shown');
+    });
+
     document.getElementById('btnToggleBandana').addEventListener('click', () => {
-      this.renderer.settings.showHeadband = !this.renderer.settings.showHeadband;
-      document.getElementById('checkHeadband').checked = this.renderer.settings.showHeadband;
-      document.getElementById('btnToggleBandana').setAttribute('aria-pressed', this.renderer.settings.showHeadband);
+      this.setEffectEnabled('showHeadband', !this.renderer.settings.showHeadband);
       window.soundManager.playPop();
       this.showToast(`👑 Headband: ${this.renderer.settings.showHeadband ? 'Enabled' : 'Disabled'}`);
     });
 
     document.getElementById('btnToggleSticker').addEventListener('click', () => {
-      this.renderer.settings.showSticker = !this.renderer.settings.showSticker;
-      document.getElementById('checkSticker').checked = this.renderer.settings.showSticker;
-      document.getElementById('btnToggleSticker').setAttribute('aria-pressed', this.renderer.settings.showSticker);
+      this.setEffectEnabled('showSticker', !this.renderer.settings.showSticker);
       window.soundManager.playPop();
       this.showToast(`✨ Cheek Sticker: ${this.renderer.settings.showSticker ? 'Enabled' : 'Disabled'}`);
     });
 
     document.getElementById('btnToggleGlasses').addEventListener('click', () => {
-      this.renderer.settings.showGlasses = !this.renderer.settings.showGlasses;
-      document.getElementById('checkGlasses').checked = this.renderer.settings.showGlasses;
-      document.getElementById('btnToggleGlasses').setAttribute('aria-pressed', this.renderer.settings.showGlasses);
+      this.setEffectEnabled('showGlasses', !this.renderer.settings.showGlasses);
       window.soundManager.playPop();
       this.showToast(`🕶️ Glasses: ${this.renderer.settings.showGlasses ? 'Enabled' : 'Disabled'}`);
     });
@@ -772,17 +808,13 @@ class CulturalDayApp {
     });
 
     document.getElementById('btnToggleHat').addEventListener('click', () => {
-      this.renderer.settings.showHat = !this.renderer.settings.showHat;
-      document.getElementById('checkHat').checked = this.renderer.settings.showHat;
-      document.getElementById('btnToggleHat').setAttribute('aria-pressed', this.renderer.settings.showHat);
+      this.setEffectEnabled('showHat', !this.renderer.settings.showHat);
       window.soundManager.playPop();
       this.showToast(`🧢 Cap: ${this.renderer.settings.showHat ? 'Enabled' : 'Disabled'}`);
     });
 
     document.getElementById('btnToggleOutfit').addEventListener('click', () => {
-      this.renderer.settings.showOutfit = !this.renderer.settings.showOutfit;
-      document.getElementById('checkOutfit').checked = this.renderer.settings.showOutfit;
-      document.getElementById('btnToggleOutfit').setAttribute('aria-pressed', this.renderer.settings.showOutfit);
+      this.setEffectEnabled('showOutfit', !this.renderer.settings.showOutfit);
       window.soundManager.playPop();
       this.showToast(`👘 Cultural outfit: ${this.renderer.settings.showOutfit ? 'Enabled' : 'Disabled'}`);
     });
@@ -872,28 +904,23 @@ class CulturalDayApp {
 
     // Checkbox binds in Settings
     document.getElementById('checkHeadband').addEventListener('change', e => {
-      this.renderer.settings.showHeadband = e.target.checked;
-      document.getElementById('btnToggleBandana').setAttribute('aria-pressed', e.target.checked);
+      this.setEffectEnabled('showHeadband', e.target.checked);
     });
     document.getElementById('checkSticker').addEventListener('change', e => {
-      this.renderer.settings.showSticker = e.target.checked;
-      document.getElementById('btnToggleSticker').setAttribute('aria-pressed', e.target.checked);
+      this.setEffectEnabled('showSticker', e.target.checked);
     });
     document.getElementById('checkGlasses').addEventListener('change', e => {
-      this.renderer.settings.showGlasses = e.target.checked;
-      document.getElementById('btnToggleGlasses').setAttribute('aria-pressed', e.target.checked);
+      this.setEffectEnabled('showGlasses', e.target.checked);
     });
     document.getElementById('selectGlassesStyle').addEventListener('change', e => {
       this.renderer.settings.glassesStyle = e.target.value;
       updateGlassesStyleLabel(e.target.value);
     });
     document.getElementById('checkHat').addEventListener('change', e => {
-      this.renderer.settings.showHat = e.target.checked;
-      document.getElementById('btnToggleHat').setAttribute('aria-pressed', e.target.checked);
+      this.setEffectEnabled('showHat', e.target.checked);
     });
     document.getElementById('checkOutfit').addEventListener('change', e => {
-      this.renderer.settings.showOutfit = e.target.checked;
-      document.getElementById('btnToggleOutfit').setAttribute('aria-pressed', e.target.checked);
+      this.setEffectEnabled('showOutfit', e.target.checked);
     });
     document.getElementById('selectStickerSide').addEventListener('change', e => {
       this.renderer.settings.stickerSide = e.target.value;
@@ -903,7 +930,7 @@ class CulturalDayApp {
       updateStickerStyleLabel(e.target.value);
     });
     document.getElementById('checkLabel').addEventListener('change', e => {
-      this.renderer.settings.showLabel = e.target.checked;
+      this.setEffectEnabled('showLabel', e.target.checked);
     });
     document.getElementById('checkMirror').addEventListener('change', e => {
       this.renderer.settings.mirrorCamera = e.target.checked;
@@ -968,11 +995,6 @@ class CulturalDayApp {
       this.photoModal.classList.remove('open');
       this.isCapturing = false; // Resume live camera
       window.soundManager.playPop();
-    });
-
-    document.getElementById('btnCloseModal').addEventListener('click', () => {
-      this.photoModal.classList.remove('open');
-      this.isCapturing = false; // Resume live camera
     });
 
     // Click outside modal to close

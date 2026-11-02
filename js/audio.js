@@ -1,5 +1,5 @@
 /**
- * Global Cultural Day - Web Audio Sound Effects
+ * Language Fair - Web Audio Sound Effects
  * 100% Client-side synthetic audio using Web Audio API (No external MP3 files needed!)
  */
 

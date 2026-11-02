@@ -1,6 +1,6 @@
-# 🌍 Global Cultural Day - Interactive AR Webcam Booth
+# 🌍 Language Fair - Interactive AR Webcam Booth
 
-Aplikasi **Interactive AR Webcam Filter** bertema **Global Cultural Day** dengan deteksi multi-wajah (*multi-face tracking* hingga 8 orang secara simultan), bandana/headband bendera melingkar di dahi secara realistis, dan stiker bendera di pipi.
+Aplikasi **Interactive AR Webcam Filter** bertema **Language Fair** dengan deteksi multi-wajah (*multi-face tracking* hingga 8 orang secara simultan), bandana/headband bendera melingkar di dahi secara realistis, dan stiker bendera di pipi.
 
 ---
 

@@ -6,14 +6,14 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>MHIS | Global Cultural Day</title>
+    <title>MHIS | Language Fair</title>
     <meta
       name="description"
-      content="Interactive multi-face AR webcam filter for Global Cultural Day with realistic flag bandanas, cheek stickers, and commemorative photobooth."
+      content="Interactive multi-face AR webcam filter for Language Fair with realistic flag bandanas, cheek stickers, and commemorative photobooth."
     />
 
     <!-- Design Stylesheet -->
-    <link rel="stylesheet" href="css/style.css?v=20261026-1" />
+    <link rel="stylesheet" href="css/style.css?v=20261102-3" />
     <link rel="icon" type="image/png" href="assets/images/icon.png" />
   </head>
 
@@ -67,7 +67,7 @@
                 alt="Mutiara Harapan Islamic School"
               />
               <div class="brand-text">
-                <h1>GLOBAL CULTURAL DAY</h1>
+                <h1>LANGUAGE FAIR</h1>
                 <span>Mutiara Harapan Islamic School</span>
               </div>
             </div>
@@ -84,6 +84,7 @@
                 class="glass-btn"
                 id="btnSwitchCam"
                 title="Switch / Start Camera"
+                hidden
               >
                 📷
               </button>
@@ -91,6 +92,7 @@
                 class="glass-btn"
                 id="btnUploadTest"
                 title="Test Multi-Face Photo (Upload)"
+                hidden
               >
                 🖼️
               </button>
@@ -102,8 +104,20 @@
               />
               <button
                 class="glass-btn"
+                id="btnToggleStickerControls"
+                type="button"
+                aria-label="Show sticker controls"
+                aria-controls="stickerControls"
+                aria-expanded="false"
+                title="Show sticker controls"
+              >
+                🙈
+              </button>
+              <button
+                class="glass-btn"
                 id="btnShuffle"
                 title="Shuffle Countries"
+                hidden
               >
                 🎲
               </button>
@@ -125,8 +139,8 @@
           </header>
 
           <!-- Right Side Quick Action Dock -->
-          <aside class="side-dock">
-            <button class="action-pill-btn" id="btnSideShuffle">
+          <aside class="side-dock" id="stickerControls" hidden>
+            <button class="action-pill-btn" id="btnSideShuffle" hidden>
               <span>🎲</span> Shuffle Flags
             </button>
             <button
@@ -139,7 +153,7 @@
             <button
               class="action-pill-btn"
               id="btnToggleSticker"
-              aria-pressed="true"
+              aria-pressed="false"
             >
               <span>✨</span> Cheek Sticker
             </button>
@@ -234,7 +248,7 @@
                 />
                 <div>
                   <span>MUTIARA HARAPAN ISLAMIC SCHOOL</span>
-                  <strong>GLOBAL CULTURAL DAY</strong>
+                  <strong>LANGUAGE FAIR</strong>
                 </div>
               </div>
               <span class="photo-frame-year">2026</span>
@@ -251,7 +265,7 @@
         <div class="photo-actions-pane">
           <div class="action-header">
             <h2>Awesome Cultural Photo! 🎉</h2>
-            <p>Commemorating Global Cultural Day with your family & friends.</p>
+            <p>Commemorating Language Fair with your family & friends.</p>
           </div>
 
           <!-- QR Code Section -->
@@ -308,9 +322,6 @@
             <button class="secondary-btn" id="btnRetakePhoto">
               <span>🔄</span> Take Another (Back to Camera)
             </button>
-            <button class="secondary-btn" id="btnCloseModal">
-              <span>✖️</span> Close
-            </button>
           </div>
         </div>
       </div>
@@ -342,8 +353,8 @@
               font-weight: 600;
             "
           >
-            <option value="3">3 Seconds</option>
-            <option value="5" selected>5 Seconds</option>
+            <option value="3" selected>3 Seconds</option>
+            <option value="5">5 Seconds</option>
             <option value="10">10 Seconds</option>
           </select>
         </div>
@@ -471,7 +482,7 @@
             <div class="setting-desc">Flag or festival icon on cheeks</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="checkSticker" checked />
+            <input type="checkbox" id="checkSticker" />
             <span class="slider"></span>
           </label>
         </div>
@@ -591,6 +602,6 @@
     <script src="js/flags.js?v=20261023-1"></script>
     <script src="js/audio.js?v=20261023-1"></script>
     <script src="js/renderer.js?v=20261023-1"></script>
-    <script src="js/app.js?v=20261026-4"></script>
+    <script src="js/app.js?v=20261102-4"></script>
   </body>
 </html>

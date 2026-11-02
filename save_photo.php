@@ -1,6 +1,6 @@
 <?php
 /**
- * Global Cultural Day - Photo Server Endpoint
+ * Language Fair - Photo Server Endpoint
  * Saves captured photo to disk and returns mobile-accessible URLs for QR Code scanning
  */
 header('Content-Type: application/json; charset=utf-8');

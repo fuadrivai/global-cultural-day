@@ -1,6 +1,6 @@
 <?php
 /**
- * Global Cultural Day - Mobile Photo View & Download Portal
+ * Language Fair - Mobile Photo View & Download Portal
  * Opened when participants/parents scan the Polaroid QR code from their phones.
  */
 
@@ -47,7 +47,7 @@ if (isset($_GET['download']) && $photoFile) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Global Cultural Day 2026 - Commemorative Photo</title>
+  <title>Language Fair 2026 - Commemorative Photo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -187,7 +187,7 @@ if (isset($_GET['download']) && $photoFile) {
 
   <div class="header">
     <div class="badge-pill">
-      <span>🎉</span> Global Cultural Day 2026
+      <span>🎉</span> Language Fair 2026
     </div>
     <h1>Your Commemorative Photo</h1>
     <p class="subtitle">Cherish the wonderful moments of global cultural diversity and togetherness on your device.</p>
@@ -196,7 +196,7 @@ if (isset($_GET['download']) && $photoFile) {
   <div class="card-wrap">
     <?php if ($photoFile && file_exists($uploadDir . DIRECTORY_SEPARATOR . $photoFile)): ?>
       <div class="photo-display">
-        <img src="photos/<?php echo htmlspecialchars($photoFile); ?>" alt="Global Cultural Day Photo">
+        <img src="photos/<?php echo htmlspecialchars($photoFile); ?>" alt="Language Fair Photo">
       </div>
     <?php else: ?>
       <div class="not-found">
